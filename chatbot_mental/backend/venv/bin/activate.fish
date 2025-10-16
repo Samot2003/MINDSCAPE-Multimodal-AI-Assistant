@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /home/samot/Proyecto_TFG_React/chatbot_mental/backend/venv
+set -gx VIRTUAL_ENV /home/samot/Proyecto_TFG_React/Github/chatbot_mental/chatbot_mental/backend/venv
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH

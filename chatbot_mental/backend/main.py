@@ -20,6 +20,10 @@ try:
 except Exception as e:
     print(f"⚠️ No se pudo inicializar Gemini: {e}")
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "message": "Servidor funcionando correctamente"}
+
 @app.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)):
     if not controller:

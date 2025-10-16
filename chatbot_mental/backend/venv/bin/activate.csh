@@ -9,7 +9,7 @@ alias deactivate 'test $?_OLD_VIRTUAL_PATH != 0 && setenv PATH "$_OLD_VIRTUAL_PA
 # Unset irrelevant variables.
 deactivate nondestructive
 
-setenv VIRTUAL_ENV /home/samot/Proyecto_TFG_React/chatbot_mental/backend/venv
+setenv VIRTUAL_ENV /home/samot/Proyecto_TFG_React/Github/chatbot_mental/chatbot_mental/backend/venv
 
 set _OLD_VIRTUAL_PATH="$PATH"
 setenv PATH "$VIRTUAL_ENV/"bin":$PATH"
