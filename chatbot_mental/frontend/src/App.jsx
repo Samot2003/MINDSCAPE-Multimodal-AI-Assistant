@@ -1,18 +1,56 @@
-// src/App.jsx
-import { useState } from "react";
-import Header from "./components/Header";
-import UploadCard from "./components/UploadCard";
-import ResultCard from "./components/ResultCard";
+import React, { useState } from "react";
+import { ChakraProvider, Box, Container, Button, Heading, VStack } from "@chakra-ui/react";
+import ImageSelectorContainer from "./components/ImageSelectorContainer";
+import ImageChatContainer from "./components/ImageChatContainer";
+import customTheme from "./theme/customTheme";
 
 function App() {
-  const [result, setResult] = useState(null);
+  const [view, setView] = useState("home"); // home / image-chat
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [initialQuestion, setInitialQuestion] = useState(null);
+
+  const handleStartSession = () => setView("image-chat");
+
+  const handleImageSelected = ({ image, pregunta }) => {
+    setSelectedImage(image);
+    setInitialQuestion({ pregunta });
+  };
+
+  const handleBackHome = () => {
+    setSelectedImage(null);
+    setInitialQuestion(null);
+    setView("home");
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start p-4 bg-calmGray">
-      <Header />
-      <UploadCard setResult={setResult} />
-      <ResultCard result={result} />
-    </div>
+    <ChakraProvider theme={customTheme}>
+      <Box minH="100vh" py={8}>
+        <Container maxW="container.lg">
+          {view === "home" && (
+            <VStack spacing={6} textAlign="center" justify="center" minH="80vh">
+              <Heading fontSize="4xl">Chatbot Emocional 🧠</Heading>
+              <Button size="lg" onClick={handleStartSession}>Empezar sesión</Button>
+            </VStack>
+          )}
+
+          {view === "image-chat" && !selectedImage && (
+            <ImageSelectorContainer onImageSelected={handleImageSelected} />
+          )}
+
+          {view === "image-chat" && selectedImage && initialQuestion && (
+            <>
+              <Button mb={4} variant="outline" onClick={handleBackHome}>
+                ← Volver
+              </Button>
+              <ImageChatContainer 
+                selectedImage={selectedImage} 
+                initialQuestion={initialQuestion} 
+              />
+            </>
+          )}
+        </Container>
+      </Box>
+    </ChakraProvider>
   );
 }
 

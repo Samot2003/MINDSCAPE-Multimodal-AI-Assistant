@@ -1,12 +1,10 @@
-# backend/main.py
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from controllers import ChatbotController
 
 app = FastAPI()
-controller = None
+controller = ChatbotController()
 
-# Permitir CORS para que React pueda conectarse
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,20 +12,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Inicializar controlador Gemini con seguridad
-try:
-    controller = ChatbotController()
-except Exception as e:
-    print(f"⚠️ No se pudo inicializar Gemini: {e}")
-
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "message": "Servidor funcionando correctamente"}
+    return {"status": "ok"}
 
-@app.post("/analyze")
-async def analyze_image(file: UploadFile = File(...)):
-    if not controller:
-        return {"error": "Controlador no disponible"}
+@app.post("/start_chat")
+async def start_chat(file: UploadFile = File(...)):
     image = file.file
-    descripcion, reflexion = controller.procesar_imagen(image)
-    return {"descripcion": descripcion, "reflexion": reflexion}
+    pregunta = controller.generar_pregunta_desde_imagen(image)
+    return {"pregunta": pregunta}
+
+@app.post("/continue_chat")
+async def continue_chat(pregunta_actual: str, respuesta_usuario: str):
+    siguiente_pregunta = controller.manejar_conversacion(pregunta_actual, respuesta_usuario)
+    return {"siguiente_pregunta": siguiente_pregunta}

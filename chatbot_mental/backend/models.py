@@ -47,3 +47,19 @@ class GeminiModel:
         """
         response = self.model.generate_content(prompt)
         return response.text
+
+    def generar_pregunta_desde_emocion(self):
+        """
+        Genera una pregunta empática basada en el análisis de la imagen.
+        """
+        prompt = "Basándote en la emoción que transmite esta imagen, formula una pregunta abierta y empática para que la persona exprese cómo se siente."
+        response = self.model.generate_content(prompt)
+        return response.text
+
+    def generar_pregunta_desde_texto(self, prompt):
+        """
+        Genera una nueva pregunta empática basada en el texto dado
+        (respuesta del usuario y pregunta anterior).
+        """
+        response = self.model.generate_content(prompt)
+        return response.text
