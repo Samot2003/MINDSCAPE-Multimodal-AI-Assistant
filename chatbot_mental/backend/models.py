@@ -1,4 +1,3 @@
-# backend/models.py
 import google.generativeai as genai
 from PIL import Image
 import os
@@ -9,57 +8,49 @@ class GeminiModel:
         load_dotenv()
         api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
-            raise ValueError("⚠️ Falta GOOGLE_API_KEY en .env")
+            raise ValueError("Falta GOOGLE_API_KEY en .env")
 
         genai.configure(api_key=api_key)
-
-        # Listar modelos disponibles
-        modelos_disponibles = [m.name for m in genai.list_models()]
-        # Elegir un modelo ligero primero
-        for nombre in [
-            "models/gemini-2.5-flash-lite",       # modelo ligero
-            "models/gemini-2.5-flash-image",      # fallback
-        ]:
-            if nombre in modelos_disponibles:
-                self.modelo_activo = nombre
-                break
-        else:
-            raise ValueError(f"No se encontró modelo compatible. Modelos: {modelos_disponibles}")
-
-        self.model = genai.GenerativeModel(self.modelo_activo)
-        print(f"✅ Usando modelo: {self.modelo_activo}")
+        self.model = genai.GenerativeModel("gemini-2.5-flash")
+        print(f"Usando modelo: {self.model}")
 
     def analizar_imagen(self, image_file):
-        # Abrir y redimensionar imagen automáticamente
         image = Image.open(image_file)
-        max_size = (512, 512)   # redimensionar para velocidad
-        image.thumbnail(max_size)
+        image.thumbnail((512, 512))
 
-        prompt = "Describe el tono emocional y visual de esta imagen de manera empática y comprensiva."
+        prompt = (
+            "Observa esta imagen y describe brevemente, de forma empática y humana, "
+            "qué emociones o sensaciones podría evocar en alguien que la mire."
+        )
         response = self.model.generate_content([prompt, image])
         return response.text
 
-    def generar_reflexion(self, descripcion):
+    def generar_pregunta_desde_emocion(self, reflexion):
         prompt = f"""
-        A partir de esta breve descripción de la imagen: "{descripcion}"
-        Desde el punto de vista de un arte terapeuta escribe una breve reflexión sobre los sentimientos que esta imagen podría provocar en una persona.
-        Mantén el texto corto y empático intentando ponerte en la piel de la persona que observa la imagen.
+        Basándote en esta reflexión: "{reflexion}",
+        formula una pregunta abierta, empática y cercana que invite al usuario
+        a reflexionar sobre lo que siente al ver la imagen, sin ser invasivo.
         """
         response = self.model.generate_content(prompt)
         return response.text
 
-    def generar_pregunta_desde_emocion(self):
+    def generar_respuesta_conversacional(self, historial):
         """
-        Genera una pregunta empática basada en el análisis de la imagen.
+        Toma todo el historial (lista de mensajes) y responde de forma empática.
         """
-        prompt = "Basándote en la emoción que transmite esta imagen, formula una pregunta abierta y empática para que la persona exprese cómo se siente."
-        response = self.model.generate_content(prompt)
-        return response.text
+        historial_texto = "\n".join(
+            [f"{m['sender'].capitalize()}: {m['text']}" for m in historial]
+        )
 
-    def generar_pregunta_desde_texto(self, prompt):
-        """
-        Genera una nueva pregunta empática basada en el texto dado
-        (respuesta del usuario y pregunta anterior).
+        prompt = f"""
+        Este es el historial de la conversación
+        {historial_texto}
+
+        Sin mostrar el historial por pantalla, continúa la 
+        conversación como si fueras el terapeuta empático,
+        ofreciendo una reflexión o pregunta que invite al
+        usuario a profundizar en lo que siente, sin sonar
+        robótico, ser invasivo o dar consejos.
         """
         response = self.model.generate_content(prompt)
         return response.text

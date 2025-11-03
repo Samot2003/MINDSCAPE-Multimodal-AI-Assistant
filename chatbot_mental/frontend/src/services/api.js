@@ -4,36 +4,46 @@ const API_BASE_URL = "http://localhost:8000";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "multipart/form-data",
-  },
 });
 
-export const startChatWithImage = async (imageFile, lastBotMessage, userResponse) => {
+export const startChatWithImage = async (imageFile) => {
   try {
-    if (imageFile) {
-      const formData = new FormData();
-      formData.append("file", imageFile);
-      const response = await api.post("/start_chat", formData);
-      return response.data; // { pregunta: "..." }
-    } else {
-      const response = await api.post("/continue_chat", {
-        pregunta_actual: lastBotMessage,
-        respuesta_usuario: userResponse,
-      });
-      return response.data; // { siguiente_pregunta: "..." }
-    }
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    const response = await api.post("/start_chat", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data; // { pregunta: "..." }
   } catch (err) {
-    console.error("Error al iniciar/continuar chat:", err);
+    console.error("Error en startChatWithImage:", err);
+    throw new Error(err.response?.data?.error || err.message);
+  }
+};
+
+export const continueChat = async (userMessage, chatMessages) => {
+  try {
+    // Formatear correctamente cada mensaje
+    const historialFormateado = chatMessages.map((m) => ({
+      sender: m.sender,
+      text: m.text,
+    }));
+
+    const response = await api.post("/continue_chat", {
+      historial: historialFormateado,
+    });
+
+    return response.data; // { siguiente_mensaje: "..." }
+  } catch (err) {
+    console.error("Error en continueChat:", err);
     throw new Error(err.response?.data?.error || err.message);
   }
 };
 
 export const checkServerHealth = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/health`);
+    const response = await api.get("/health");
     return response.data;
-  } catch (error) {
+  } catch {
     throw new Error("No se puede conectar con el servidor");
   }
 };

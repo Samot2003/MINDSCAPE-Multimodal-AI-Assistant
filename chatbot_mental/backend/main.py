@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from controllers import ChatbotController
 
 app = FastAPI()
@@ -12,6 +13,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class ChatRequest(BaseModel):
+    historial: list  # lista de diccionarios: [{"sender": "user"/"bot", "text": "..."}]
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
@@ -23,6 +27,6 @@ async def start_chat(file: UploadFile = File(...)):
     return {"pregunta": pregunta}
 
 @app.post("/continue_chat")
-async def continue_chat(pregunta_actual: str, respuesta_usuario: str):
-    siguiente_pregunta = controller.manejar_conversacion(pregunta_actual, respuesta_usuario)
-    return {"siguiente_pregunta": siguiente_pregunta}
+async def continue_chat(data: ChatRequest):
+    siguiente_mensaje = controller.manejar_conversacion(data.historial)
+    return {"siguiente_mensaje": siguiente_mensaje}

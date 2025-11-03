@@ -1,16 +1,18 @@
-// src/components/ui/ImageChatUI.jsx
 import React from "react";
 import {
-  HStack,
-  VStack,
   Box,
+  VStack,
+  HStack,
+  Heading,
+  Text,
+  Button,
   Image,
   Input,
-  Button,
-  Text,
-  Heading,
   Spinner,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
+
+const MotionBox = motion(Box);
 
 const ImageChatUI = ({
   selectedImage,
@@ -18,67 +20,149 @@ const ImageChatUI = ({
   userInput,
   setUserInput,
   handleSend,
-  loading,
 }) => {
   return (
-    <HStack align="start" spacing={4}>
-      {/* Imagen */}
-      <Box w="40%" borderRadius="md" overflow="hidden">
-        <Image
-          src={
-            selectedImage instanceof File
-              ? URL.createObjectURL(selectedImage)
-              : selectedImage
-          }
-          alt="Seleccionada"
-          borderRadius="md"
-          maxH="400px"
-          objectFit="cover"
-        />
-      </Box>
-
-      {/* Chat */}
-      <VStack
-        w="60%"
-        h="400px"
-        p={4}
-        border="1px solid #CBD5E0"
-        borderRadius="md"
-        overflowY="auto"
-        spacing={3}
-        align="stretch"
+    <VStack
+      spacing={6}
+      align="center"
+      justify="flex-start"
+      minH="100vh"
+      bgGradient="linear(to-br, green.50, teal.50)"
+      p={6}
+    >
+      {/* Título */}
+      <Heading color="teal.700" size="lg" textAlign="center">
+        Mindscape AI
+      </Heading>
+      <Text
+        color="gray.600"
+        fontSize="sm"
+        textAlign="center"
+        maxW="500px"
+        lineHeight="1.5"
       >
-        <Heading size="md">Chat Empático</Heading>
-        {chatMessages.map((msg, idx) => (
-          <Box
-            key={idx}
-            bg={msg.sender === "bot" ? "teal.100" : "green.100"}
-            color="black"
-            p={2}
-            borderRadius="md"
-            alignSelf={msg.sender === "bot" ? "flex-start" : "flex-end"}
+        Reflexiona sobre tus emociones a partir de la imagen seleccionada. 
+        La IA te acompañará en un diálogo empático.
+      </Text>
+
+      {/* Contenedor principal */}
+      <HStack
+        spacing={4}
+        align="flex-start"
+        justify="center"
+        flexWrap="wrap"
+        w="95%"
+      >
+        {/* Imagen */}
+        <MotionBox
+          bg="white"
+          p={4}
+          borderRadius="2xl"
+          boxShadow="xl"
+          w={["90%", "70%", "40%"]}
+          maxH="300px"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          whileHover={{ scale: 1.01 }}
+        >
+          {selectedImage ? (
+            <Image
+              src={
+                selectedImage instanceof File
+                  ? URL.createObjectURL(selectedImage)
+                  : selectedImage
+              }
+              alt="Seleccionada"
+              borderRadius="xl"
+              maxH="250px"
+              objectFit="cover"
+              boxShadow="md"
+            />
+          ) : (
+            <Text color="gray.500" textAlign="center">
+              No hay imagen seleccionada
+            </Text>
+          )}
+        </MotionBox>
+
+        {/* Chat */}
+        <MotionBox
+          bg="green.50"
+          p={4}
+          borderRadius="2xl"
+          boxShadow="xl"
+          w={["90%", "70%", "55%"]}
+          maxH="300px"
+          display="flex"
+          flexDirection="column"
+          whileHover={{ scale: 1.01 }}
+        >
+          <VStack
+            spacing={2}
+            align="stretch"
+            flex="1"
+            overflowY="auto"
+            pr={2}
+            maxH="220px"
+            css={{
+              "&::-webkit-scrollbar": { width: "6px" },
+              "&::-webkit-scrollbar-thumb": {
+                background: "rgba(72, 187, 120, 0.5)",
+                borderRadius: "3px",
+              },
+            }}
           >
-            <Text>{msg.text}</Text>
-          </Box>
-        ))}
+            {chatMessages.map((msg, idx) => (
+              <Box
+                key={idx}
+                bg={msg.sender === "bot" ? "teal.50" : "green.50"}
+                color="black"
+                p={2}
+                borderRadius="xl"
+                alignSelf={msg.sender === "bot" ? "flex-start" : "flex-end"}
+                whiteSpace="pre-line"
+                boxShadow="sm"
+                border="1px solid"
+                borderColor={msg.sender === "bot" ? "teal.100" : "green.100"}
+              >
+                <Text fontSize="sm">{msg.text}</Text>
+              </Box>
+            ))}
 
-        {loading && <Spinner color="teal.500" />}
+            {chatMessages.length === 0 && (
+              <VStack align="center" mt={2}>
+                <Spinner color="teal.500" size="md" />
+                <Text color="gray.500" fontSize="sm">
+                  Iniciando chat...
+                </Text>
+              </VStack>
+            )}
+          </VStack>
 
-        {!loading && (
-          <HStack mt="auto">
+          <HStack mt={3} spacing={2}>
             <Input
               placeholder="Escribe tu respuesta..."
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              size="sm"
+              bg="white"
+              flex="1"
             />
-            <Button colorScheme="teal" onClick={handleSend}>
+            <Button
+              colorScheme="teal"
+              onClick={handleSend}
+              rounded="full"
+              px={4}
+              size="sm"
+            >
               Enviar
             </Button>
           </HStack>
-        )}
-      </VStack>
-    </HStack>
+        </MotionBox>
+      </HStack>
+    </VStack>
   );
 };
 

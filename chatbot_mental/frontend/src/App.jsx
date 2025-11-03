@@ -5,7 +5,7 @@ import ImageChatContainer from "./components/ImageChatContainer";
 import customTheme from "./theme/customTheme";
 
 function App() {
-  const [view, setView] = useState("home"); // home / image-chat
+  const [view, setView] = useState("home");
   const [selectedImage, setSelectedImage] = useState(null);
   const [initialQuestion, setInitialQuestion] = useState(null);
 
@@ -28,7 +28,7 @@ function App() {
         <Container maxW="container.lg">
           {view === "home" && (
             <VStack spacing={6} textAlign="center" justify="center" minH="80vh">
-              <Heading fontSize="4xl">Chatbot Emocional 🧠</Heading>
+              <Heading fontSize="4xl">EmocionArt Chat🧠</Heading>
               <Button size="lg" onClick={handleStartSession}>Empezar sesión</Button>
             </VStack>
           )}

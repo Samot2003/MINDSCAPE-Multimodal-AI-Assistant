@@ -1,15 +1,18 @@
-// src/components/ImageSelectorContainer.jsx
 import React, { useState } from "react";
-import { Box, Input, Button, VStack, useToast } from "@chakra-ui/react";
+import { useToast } from "@chakra-ui/react";
 import { startChatWithImage } from "../services/api";
+import ImageSelectorUI from "./ImageSelectorUI";
 
 const ImageSelectorContainer = ({ onImageSelected }) => {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(false);
   const toast = useToast();
+
+  const handleSelectImage = (e) => setSelectedImage(e.target.files[0]);
 
   const handleSubmit = async () => {
     if (!selectedImage) return;
-
+    setLoading(true);
     try {
       const { pregunta } = await startChatWithImage(selectedImage);
       if (!pregunta) throw new Error("No se recibió pregunta del backend");
@@ -17,26 +20,24 @@ const ImageSelectorContainer = ({ onImageSelected }) => {
     } catch (err) {
       console.error(err);
       toast({
-        title: "Error",
-        description: err.message,
+        title: "Error al procesar la imagen",
+        description: err.message || "Intenta nuevamente.",
         status: "error",
-        duration: 5000,
+        duration: 4000,
         isClosable: true,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <VStack spacing={4} align="center">
-      <Input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setSelectedImage(e.target.files[0])}
-      />
-      <Button colorScheme="teal" onClick={handleSubmit} isDisabled={!selectedImage}>
-        Enviar imagen
-      </Button>
-    </VStack>
+    <ImageSelectorUI
+      selectedImage={selectedImage}
+      loading={loading}
+      onSelectImage={handleSelectImage}
+      onSubmit={handleSubmit}
+    />
   );
 };
 

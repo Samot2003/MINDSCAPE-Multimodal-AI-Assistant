@@ -1,159 +1,125 @@
-// src/components/ui/ImageChatUI.jsx
-import React, { useState } from "react";
+import React from "react";
 import {
-  HStack,
-  VStack,
   Box,
-  Image,
-  Input,
-  Button,
-  Text,
+  VStack,
   Heading,
+  Text,
+  Button,
+  Image,
   Spinner,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  useDisclosure,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 
-const ImageChatUI = ({
+const MotionBox = motion(Box);
+
+const ImageSelectorUI = ({
   selectedImage,
-  chatMessages,
-  userInput,
-  setUserInput,
-  handleSend,
   loading,
+  onSelectImage,
+  onSubmit,
 }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [previewSrc, setPreviewSrc] = useState(null);
-
-  const handlePreview = () => {
-    const src =
-      selectedImage instanceof File
-        ? URL.createObjectURL(selectedImage)
-        : selectedImage;
-    setPreviewSrc(src);
-    onOpen();
-  };
-
   return (
-    <Box
+    <VStack
+      spacing={8}
+      align="center"
+      justify="center"
+      minH="80vh"
       bgGradient="linear(to-br, green.50, teal.50)"
-      p={6}
       borderRadius="2xl"
-      boxShadow="lg"
-      w="100%"
+      p={8}
     >
-      <HStack align="start" spacing={6}>
-        {/* Imagen con vista previa */}
-        <Box
-          w="40%"
-          borderRadius="xl"
-          overflow="hidden"
-          bg="white"
-          boxShadow="md"
-          p={3}
-          _hover={{ transform: "scale(1.02)", transition: "0.2s" }}
-          cursor="pointer"
-          onClick={handlePreview}
-        >
-          <Image
-            src={
-              selectedImage instanceof File
-                ? URL.createObjectURL(selectedImage)
-                : selectedImage
-            }
-            alt="Seleccionada"
-            borderRadius="md"
-            maxH="350px"
-            objectFit="cover"
-            w="100%"
-          />
-          <Text fontSize="sm" mt={2} textAlign="center" color="gray.600">
-            Haz clic para ampliar imagen
-          </Text>
-        </Box>
+      <Heading color="teal.700" size="lg">
+        Sube una imagen 🌿
+      </Heading>
 
-        {/* Chat */}
-        <VStack
-          w="60%"
-          h="450px"
-          p={5}
-          border="1px solid"
-          borderColor="green.100"
-          borderRadius="xl"
-          bg="whiteAlpha.900"
-          boxShadow="md"
-          overflowY="auto"
-          spacing={4}
-          align="stretch"
-        >
-          <Heading size="md" color="teal.700">
-            Chat Empático 🌱
-          </Heading>
+      <Text color="gray.600" fontSize="md" textAlign="center" maxW="400px">
+        Elige una imagen que represente tu estado emocional.  
+        El chatbot reflexionará contigo a partir de ella.
+      </Text>
 
-          {chatMessages.map((msg, idx) => (
-            <Box
-              key={idx}
-              bg={msg.sender === "bot" ? "green.100" : "teal.100"}
-              color="gray.800"
-              p={3}
-              borderRadius="lg"
-              alignSelf={msg.sender === "bot" ? "flex-start" : "flex-end"}
-              maxW="80%"
-              boxShadow="sm"
+      <MotionBox
+        bg="white"
+        p={6}
+        borderRadius="2xl"
+        boxShadow="xl"
+        w={["90%", "70%", "50%"]}
+        textAlign="center"
+        whileHover={{ scale: 1.02 }}
+        transition="all 0.2s ease-in-out"
+      >
+        {/* Sin imagen seleccionada */}
+        {!selectedImage && !loading && (
+          <>
+            <Button
+              as="label"
+              htmlFor="file-upload"
+              size="lg"
+              colorScheme="teal"
+              rounded="full"
+              px={8}
+              cursor="pointer"
+              _hover={{ bg: "teal.500" }}
             >
-              <Text>{msg.text}</Text>
-            </Box>
-          ))}
+              📁 Seleccionar imagen
+            </Button>
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={onSelectImage}
+            />
+          </>
+        )}
 
-          {loading && (
-            <HStack justify="center">
-              <Spinner color="teal.500" />
-            </HStack>
-          )}
-
-          {!loading && (
-            <HStack mt="auto" spacing={3}>
-              <Input
-                placeholder="Escribe tu respuesta..."
-                bg="white"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                borderColor="green.200"
-                _focus={{ borderColor: "teal.400", boxShadow: "0 0 0 1px teal.300" }}
-              />
-              <Button
-                colorScheme="teal"
-                onClick={handleSend}
-                _hover={{ bg: "teal.500" }}
-              >
-                Enviar
-              </Button>
-            </HStack>
-          )}
-        </VStack>
-      </HStack>
-
-      {/* Modal de vista previa */}
-      <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
-        <ModalOverlay />
-        <ModalContent bg="white" p={4} borderRadius="2xl" boxShadow="xl">
-          <ModalBody>
+        {/* Vista previa */}
+        {selectedImage && !loading && (
+          <VStack spacing={4}>
             <Image
-              src={previewSrc}
+              src={
+                selectedImage instanceof File
+                  ? URL.createObjectURL(selectedImage)
+                  : selectedImage
+              }
               alt="Vista previa"
               borderRadius="xl"
-              w="100%"
-              objectFit="contain"
+              maxH="250px"
+              objectFit="cover"
+              boxShadow="md"
             />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </Box>
+            <Text fontSize="sm" color="gray.500">
+              Imagen lista para analizar 🌱
+            </Text>
+            <Button
+              colorScheme="teal"
+              onClick={onSubmit}
+              rounded="full"
+              px={8}
+              _hover={{ bg: "teal.500" }}
+            >
+              Enviar imagen
+            </Button>
+          </VStack>
+        )}
+
+        {/* Estado de carga */}
+        {loading && (
+          <VStack spacing={4}>
+            <Spinner
+              thickness="5px"
+              speed="0.8s"
+              emptyColor="gray.200"
+              color="teal.500"
+              size="xl"
+            />
+            <Text fontSize="md" color="gray.600">
+              Procesando tu imagen... ✨
+            </Text>
+          </VStack>
+        )}
+      </MotionBox>
+    </VStack>
   );
 };
 
-export default ImageChatUI;
+export default ImageSelectorUI;
