@@ -13,7 +13,7 @@ export const startChatWithImage = async (imageFile) => {
     const response = await api.post("/start_chat", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data; // { pregunta: "..." }
+    return response.data;
   } catch (err) {
     console.error("Error en startChatWithImage:", err);
     throw new Error(err.response?.data?.error || err.message);
@@ -22,17 +22,11 @@ export const startChatWithImage = async (imageFile) => {
 
 export const continueChat = async (userMessage, chatMessages) => {
   try {
-    // Formatear correctamente cada mensaje
-    const historialFormateado = chatMessages.map((m) => ({
-      sender: m.sender,
-      text: m.text,
-    }));
-
     const response = await api.post("/continue_chat", {
-      historial: historialFormateado,
+      historial: chatMessages,
     });
 
-    return response.data; // { siguiente_mensaje: "..." }
+    return response.data;
   } catch (err) {
     console.error("Error en continueChat:", err);
     throw new Error(err.response?.data?.error || err.message);

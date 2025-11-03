@@ -14,7 +14,7 @@ app.add_middleware(
 )
 
 class ChatRequest(BaseModel):
-    historial: list  # lista de diccionarios: [{"sender": "user"/"bot", "text": "..."}]
+    historial: list
 
 @app.get("/health")
 async def health_check():
