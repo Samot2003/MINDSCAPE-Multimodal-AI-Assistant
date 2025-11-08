@@ -23,10 +23,10 @@ async def health_check():
 @app.post("/start_chat")
 async def start_chat(file: UploadFile = File(...)):
     image = file.file
-    pregunta = controller.generar_pregunta_desde_imagen(image)
+    pregunta = controller.start_chat(image)
     return {"pregunta": pregunta}
 
 @app.post("/continue_chat")
 async def continue_chat(data: ChatRequest):
-    siguiente_mensaje = controller.manejar_conversacion(data.historial)
+    siguiente_mensaje = controller.continue_chat(data.historial)
     return {"siguiente_mensaje": siguiente_mensaje}

@@ -4,11 +4,10 @@ class ChatbotController:
     def __init__(self):
         self.model = GeminiModel()
 
-    def generar_pregunta_desde_imagen(self, image_file):
-        descripcion = self.model.analizar_imagen(image_file)
-        pregunta = self.model.generar_pregunta_desde_emocion(descripcion)
+    def start_chat(self, image_file):
+        pregunta = self.model.start_chat(image_file)
         return pregunta
 
-    def manejar_conversacion(self, historial):
-        siguiente_mensaje = self.model.generar_respuesta_conversacional(historial)
+    def continue_chat(self, historial):
+        siguiente_mensaje = self.model.continue_chat(historial)
         return siguiente_mensaje

@@ -22,15 +22,15 @@ const ImageChatUI = ({
   handleSend,
 }) => {
   return (
+    // Cuadro verde superior
     <VStack
       spacing={6}
       align="center"
       justify="flex-start"
-      minH="100vh"
+      minH="85vh"
       bgGradient="linear(to-br, green.50, teal.50)"
       p={6}
     >
-      {/* Título */}
       <Heading color="teal.700" size="lg" textAlign="center">
         Mindscape AI
       </Heading>
@@ -44,8 +44,6 @@ const ImageChatUI = ({
         Reflexiona sobre tus emociones a partir de la imagen seleccionada. 
         La IA te acompañará en un diálogo empático.
       </Text>
-
-      {/* Contenedor principal */}
       <HStack
         spacing={4}
         align="flex-start"
@@ -53,7 +51,7 @@ const ImageChatUI = ({
         flexWrap="wrap"
         w="95%"
       >
-        {/* Imagen */}
+        {/* Visualización de la Imagen */}
         <MotionBox
           bg="white"
           p={4}
@@ -74,7 +72,7 @@ const ImageChatUI = ({
                   : selectedImage
               }
               alt="Seleccionada"
-              borderRadius="xl"
+              borderRadius="s"
               maxH="250px"
               objectFit="cover"
               boxShadow="md"
@@ -85,15 +83,14 @@ const ImageChatUI = ({
             </Text>
           )}
         </MotionBox>
-
-        {/* Chat */}
+        {/* Muestra de la conversación */}
         <MotionBox
           bg="green.50"
           p={4}
           borderRadius="2xl"
           boxShadow="xl"
           w={["90%", "70%", "55%"]}
-          maxH="300px"
+          H="700px"
           display="flex"
           flexDirection="column"
           whileHover={{ scale: 1.01 }}
@@ -104,7 +101,7 @@ const ImageChatUI = ({
             flex="1"
             overflowY="auto"
             pr={2}
-            maxH="220px"
+            minH="550px"
             css={{
               "&::-webkit-scrollbar": { width: "6px" },
               "&::-webkit-scrollbar-thumb": {

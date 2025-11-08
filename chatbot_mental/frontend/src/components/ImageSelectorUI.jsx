@@ -47,7 +47,6 @@ const ImageSelectorUI = ({
         whileHover={{ scale: 1.02 }}
         transition="all 0.2s ease-in-out"
       >
-        {/* Sin imagen seleccionada */}
         {!selectedImage && !loading && (
           <>
             <Button
@@ -71,8 +70,6 @@ const ImageSelectorUI = ({
             />
           </>
         )}
-
-        {/* Vista previa */}
         {selectedImage && !loading && (
           <VStack spacing={4}>
             <Image
@@ -101,8 +98,6 @@ const ImageSelectorUI = ({
             </Button>
           </VStack>
         )}
-
-        {/* Estado de carga */}
         {loading && (
           <VStack spacing={4}>
             <Spinner
