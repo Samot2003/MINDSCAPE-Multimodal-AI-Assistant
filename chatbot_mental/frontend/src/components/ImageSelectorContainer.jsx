@@ -8,15 +8,37 @@ const ImageSelectorContainer = ({ onImageSelected }) => {
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
-  const handleSelectImage = (e) => setSelectedImage(e.target.files[0]);
+  // Maneja la selección de imagen
+  const handleSelectImage = (input) => {
+    // Subida del usuario
+    if (input.target?.files && input.target.files[0]) {
+      setSelectedImage(input.target.files[0]);
+    } 
+    // Imagen predeterminada
+    else if (typeof input === "string") {
+      setSelectedImage(input);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!selectedImage) return;
     setLoading(true);
+
     try {
-      const { pregunta } = await startChatWithImage(selectedImage);
+      let imageToSend = selectedImage;
+
+      // Convertir URL predeterminada a File
+      if (typeof selectedImage === "string") {
+        const response = await fetch(selectedImage);
+        const blob = await response.blob();
+        imageToSend = new File([blob], "default.png", { type: blob.type });
+      }
+
+      const { pregunta } = await startChatWithImage(imageToSend);
+
       if (!pregunta) throw new Error("No se recibió pregunta del backend");
-      onImageSelected({ image: selectedImage, pregunta });
+
+      onImageSelected({ image: imageToSend, pregunta });
     } catch (err) {
       console.error(err);
       toast({

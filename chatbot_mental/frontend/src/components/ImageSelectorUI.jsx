@@ -2,6 +2,7 @@ import React from "react";
 import {
   Box,
   VStack,
+  HStack,
   Heading,
   Text,
   Button,
@@ -12,12 +13,13 @@ import { motion } from "framer-motion";
 
 const MotionBox = motion(Box);
 
-const ImageSelectorUI = ({
-  selectedImage,
-  loading,
-  onSelectImage,
-  onSubmit,
-}) => {
+// Importa automáticamente todas las imágenes predeterminadas
+const importAll = (r) => r.keys().map(r);
+const defaultImages = importAll(
+  require.context("../assets/images", false, /\.(png|jpe?g|svg)$/)
+);
+
+const ImageSelectorUI = ({ selectedImage, loading, onSelectImage, onSubmit }) => {
   return (
     <VStack
       spacing={8}
@@ -28,15 +30,30 @@ const ImageSelectorUI = ({
       borderRadius="2xl"
       p={8}
     >
-      <Heading color="teal.700" size="lg">
-        Sube una imagen 🌿
-      </Heading>
-
+      <Heading color="teal.700" size="lg">Sube una imagen 🌿</Heading>
       <Text color="gray.600" fontSize="md" textAlign="center" maxW="400px">
         Elige una imagen que represente tu estado emocional.  
         El chatbot reflexionará contigo a partir de ella.
       </Text>
 
+      {/* Imágenes predeterminadas */}
+      <HStack spacing={4} flexWrap="wrap" justify="center" w="100%">
+        {defaultImages.map((img, i) => (
+          <MotionBox
+            key={i}
+            borderRadius="xl"
+            overflow="hidden"
+            boxShadow={selectedImage === img ? "0 0 0 3px teal" : "md"}
+            whileHover={{ scale: 1.05 }}
+            cursor="pointer"
+            onClick={() => onSelectImage(img)}
+          >
+            <Image src={img} alt={`Imagen ${i + 1}`} boxSize="100px" objectFit="cover" />
+          </MotionBox>
+        ))}
+      </HStack>
+
+      {/* Área de subida / botón continuar */}
       <MotionBox
         bg="white"
         p={6}
@@ -49,6 +66,13 @@ const ImageSelectorUI = ({
       >
         {!selectedImage && !loading && (
           <>
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={onSelectImage}
+            />
             <Button
               as="label"
               htmlFor="file-upload"
@@ -59,34 +83,22 @@ const ImageSelectorUI = ({
               cursor="pointer"
               _hover={{ bg: "teal.500" }}
             >
-              📁 Seleccionar imagen
+              📁 Subir tu propia imagen
             </Button>
-            <input
-              id="file-upload"
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={onSelectImage}
-            />
           </>
         )}
+
         {selectedImage && !loading && (
           <VStack spacing={4}>
             <Image
-              src={
-                selectedImage instanceof File
-                  ? URL.createObjectURL(selectedImage)
-                  : selectedImage
-              }
+              src={selectedImage instanceof File ? URL.createObjectURL(selectedImage) : selectedImage}
               alt="Vista previa"
               borderRadius="xl"
               maxH="250px"
               objectFit="cover"
               boxShadow="md"
             />
-            <Text fontSize="sm" color="gray.500">
-              Imagen lista para analizar 🌱
-            </Text>
+            <Text fontSize="sm" color="gray.500">Imagen lista para analizar 🌱</Text>
             <Button
               colorScheme="teal"
               onClick={onSubmit}
@@ -98,18 +110,11 @@ const ImageSelectorUI = ({
             </Button>
           </VStack>
         )}
+
         {loading && (
           <VStack spacing={4}>
-            <Spinner
-              thickness="5px"
-              speed="0.8s"
-              emptyColor="gray.200"
-              color="teal.500"
-              size="xl"
-            />
-            <Text fontSize="md" color="gray.600">
-              Procesando tu imagen... ✨
-            </Text>
+            <Spinner thickness="5px" speed="0.8s" emptyColor="gray.200" color="teal.500" size="xl" />
+            <Text fontSize="md" color="gray.600">Procesando tu imagen... ✨</Text>
           </VStack>
         )}
       </MotionBox>

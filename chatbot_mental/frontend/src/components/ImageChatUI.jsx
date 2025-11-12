@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   VStack,
@@ -10,7 +10,8 @@ import {
   Input,
   Spinner,
 } from "@chakra-ui/react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import ColorThief from "color-thief";
 
 const MotionBox = motion(Box);
 
@@ -20,80 +21,89 @@ const ImageChatUI = ({
   userInput,
   setUserInput,
   handleSend,
+  loading,
 }) => {
+  const [bgColor, setBgColor] = useState("rgba(72, 187, 120, 0.4)");
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    if (!selectedImage) return;
+
+    // Obtener color dominante de la imagen
+    const image = imgRef.current;
+    if (image) {
+      const colorThief = new ColorThief();
+      const rgb = colorThief.getColor(image);
+      setBgColor(`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.4)`);
+    }
+  }, [selectedImage]);
+
   return (
-    // Cuadro verde superior
     <VStack
       spacing={6}
       align="center"
       justify="flex-start"
       minH="85vh"
-      bgGradient="linear(to-br, green.50, teal.50)"
-      p={6}
+      position="relative"
+      overflow="hidden"
+      borderRadius="2xl"
     >
-      <Heading color="teal.700" size="lg" textAlign="center">
-        Mindscape AI
-      </Heading>
-      <Text
-        color="gray.600"
-        fontSize="sm"
-        textAlign="center"
-        maxW="500px"
-        lineHeight="1.5"
-      >
-        Reflexiona sobre tus emociones a partir de la imagen seleccionada. 
-        La IA te acompañará en un diálogo empático.
-      </Text>
+      {/* Fondo dinámico */}
+      {selectedImage && (
+        <MotionBox
+          position="absolute"
+          top={0}
+          left={0}
+          w="100%"
+          h="100%"
+          backgroundImage={`url(${
+            selectedImage instanceof File
+              ? URL.createObjectURL(selectedImage)
+              : selectedImage
+          })`}
+          backgroundSize="cover"
+          backgroundPosition="center"
+          filter="blur(20px) brightness(0.7)"
+          zIndex={0}
+          initial={{ scale: 1.05 }}
+          animate={{ scale: 1.1 }}
+          transition={{ duration: 20, repeat: Infinity, repeatType: "mirror" }}
+        />
+      )}
+
+      <VStack spacing={4} zIndex={1} p={6}>
+        <Heading color="teal.50" size="lg" textAlign="center">
+          Mindscape AI
+        </Heading>
+        <Text
+          color="teal.100"
+          fontSize="sm"
+          textAlign="center"
+          maxW="500px"
+          lineHeight="1.5"
+        >
+          Reflexiona sobre tus emociones a partir de la imagen seleccionada. 
+          La IA te acompañará en un diálogo empático.
+        </Text>
+      </VStack>
+
       <HStack
         spacing={4}
         align="flex-start"
         justify="center"
         flexWrap="wrap"
         w="95%"
+        zIndex={1}
       >
-        {/* Visualización de la Imagen */}
+        {/* Panel de la conversación */}
         <MotionBox
-          bg="white"
-          p={4}
-          borderRadius="2xl"
-          boxShadow="xl"
-          w={["90%", "70%", "40%"]}
-          maxH="300px"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          whileHover={{ scale: 1.01 }}
-        >
-          {selectedImage ? (
-            <Image
-              src={
-                selectedImage instanceof File
-                  ? URL.createObjectURL(selectedImage)
-                  : selectedImage
-              }
-              alt="Seleccionada"
-              borderRadius="s"
-              maxH="250px"
-              objectFit="cover"
-              boxShadow="md"
-            />
-          ) : (
-            <Text color="gray.500" textAlign="center">
-              No hay imagen seleccionada
-            </Text>
-          )}
-        </MotionBox>
-        {/* Muestra de la conversación */}
-        <MotionBox
-          bg="green.50"
-          p={4}
+          bg="rgba(255, 255, 255, 0.15)"
+          backdropFilter="blur(10px)"
           borderRadius="2xl"
           boxShadow="xl"
           w={["90%", "70%", "55%"]}
-          H="700px"
           display="flex"
           flexDirection="column"
-          whileHover={{ scale: 1.01 }}
         >
           <VStack
             spacing={2}
@@ -105,7 +115,7 @@ const ImageChatUI = ({
             css={{
               "&::-webkit-scrollbar": { width: "6px" },
               "&::-webkit-scrollbar-thumb": {
-                background: "rgba(72, 187, 120, 0.5)",
+                background: "rgba(255,255,255,0.4)",
                 borderRadius: "3px",
               },
             }}
@@ -113,15 +123,17 @@ const ImageChatUI = ({
             {chatMessages.map((msg, idx) => (
               <Box
                 key={idx}
-                bg={msg.sender === "bot" ? "teal.50" : "green.50"}
-                color="black"
+                bg={
+                  msg.sender === "bot"
+                    ? `rgba(${bgColor}, 0.6)`
+                    : `rgba(255,255,255,0.25)`
+                }
+                color="white"
                 p={2}
                 borderRadius="xl"
                 alignSelf={msg.sender === "bot" ? "flex-start" : "flex-end"}
                 whiteSpace="pre-line"
                 boxShadow="sm"
-                border="1px solid"
-                borderColor={msg.sender === "bot" ? "teal.100" : "green.100"}
               >
                 <Text fontSize="sm">{msg.text}</Text>
               </Box>
@@ -129,8 +141,8 @@ const ImageChatUI = ({
 
             {chatMessages.length === 0 && (
               <VStack align="center" mt={2}>
-                <Spinner color="teal.500" size="md" />
-                <Text color="gray.500" fontSize="sm">
+                <Spinner color="teal.200" size="md" />
+                <Text color="teal.100" fontSize="sm">
                   Iniciando chat...
                 </Text>
               </VStack>
@@ -142,23 +154,46 @@ const ImageChatUI = ({
               placeholder="Escribe tu respuesta..."
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              isDisabled={loading}
+              onKeyDown={(e) => e.key === "Enter" && !loading && handleSend()}
               size="sm"
-              bg="white"
+              bg="rgba(255,255,255,0.3)"
+              color="white"
               flex="1"
             />
+
             <Button
               colorScheme="teal"
               onClick={handleSend}
               rounded="full"
               px={4}
               size="sm"
+              isDisabled={loading || !userInput.trim()}
+              leftIcon={loading ? <Spinner size="xs" /> : null}
+              opacity={loading ? 0.6 : 1}              
+              cursor={loading ? "not-allowed" : "pointer"}
+              transition="all 0.2s ease"
             >
-              Enviar
+              {loading ? "Esperando..." : "Enviar"}
             </Button>
           </HStack>
         </MotionBox>
       </HStack>
+
+      {/* Imagen invisible para ColorThief */}
+      {selectedImage && (
+        <img
+          ref={imgRef}
+          src={
+            selectedImage instanceof File
+              ? URL.createObjectURL(selectedImage)
+              : selectedImage
+          }
+          crossOrigin="anonymous"
+          alt="Dominant"
+          style={{ display: "none" }}
+        />
+      )}
     </VStack>
   );
 };
