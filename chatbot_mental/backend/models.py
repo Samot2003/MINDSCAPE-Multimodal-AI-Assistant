@@ -14,18 +14,28 @@ class GeminiModel:
         self.model = genai.GenerativeModel("gemini-2.5-flash")
         print(f"Usando modelo: {self.model}")
 
-    def start_chat(self, image_file):
+    def start_chat(self, image_file, isDefault):
         image = Image.open(image_file)
         image.thumbnail((512, 512))
 
-        prompt = f"""
-            Ponte en situacion eres una IA diseñada para ayudar a la gente a expresar
-            sus sentimientos para poder procesarlos y reflexionar sobre ellos.
+        if isDefault:
+            prompt = f"""
+            Ponte en situacion eres una IA diseñada para ayudar a la gente a expresar 
+            sus sentimientos para poder procesarlos y reflexionar sobre ellos. 
+            
+            Desde este prisma el usuario te adjunta una imagen {image} predeterminada que ha escogido sobre la que quiere hacer una reflexión. 
+            Genera una pregunta para iniciar la conversación de forma natural que invite al usuario a expresar sus sentimientos.
+            """
+        else:
+            prompt = f"""
+            Eres una IA diseñada para ayudar a la gente a expresar sus sentimientos
+            y reflexionar sobre ellos.
 
-            Desde este prisma el usuario te adjunta una imagen {image} sobre la que quiere hacer una
-            reflexión. Genera una pregunta para iniciar la conversación de forma natural
-            que invite al usuario a expresar sus sentimientos.
-        """
+            El usuario ha subido su propia creación: {image}.
+            Genera una pregunta inicial para iniciar una conversación natural,
+            considerando que la imagen es creación del usuario.
+            Invita al usuario a expresar sus sentimientos y reflexiones respecto a la imagen.
+            """
         response = self.model.generate_content([prompt, image])
         return response.text
 

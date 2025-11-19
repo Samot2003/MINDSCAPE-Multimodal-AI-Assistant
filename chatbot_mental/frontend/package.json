@@ -6,6 +6,7 @@
     "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^2.10.9",
     "axios": "^1.12.2",
+    "color-thief-browser": "^2.0.2",
     "framer-motion": "^12.23.24",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -38,11 +39,7 @@
     ]
   },
   "devDependencies": {
-    "autoprefixer": "^9.8.8",
-    "postcss": "^7.0.39",
     "postcss-flexbugs-fixes": "^5.0.2",
-    "postcss-normalize": "^13.0.1",
-    "postcss-preset-env": "^10.4.0",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.17"
+    "postcss-normalize": "^13.0.1"
   }
 }

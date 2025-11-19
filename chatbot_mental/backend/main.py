@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from controllers import ChatbotController
@@ -21,9 +21,9 @@ async def health_check():
     return {"status": "ok"}
 
 @app.post("/start_chat")
-async def start_chat(file: UploadFile = File(...)):
+async def start_chat(file: UploadFile = File(...), isDefault: bool = Form(...)):
     image = file.file
-    pregunta = controller.start_chat(image)
+    pregunta = controller.start_chat(image, isDefault)
     return {"pregunta": pregunta}
 
 @app.post("/continue_chat")

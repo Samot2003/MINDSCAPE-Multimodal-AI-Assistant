@@ -29,7 +29,9 @@ function App() {
           {view === "home" && (
             <VStack spacing={6} textAlign="center" justify="center" minH="80vh">
               <Heading fontSize="4xl">Mindscape AI</Heading>
-              <Button size="lg" onClick={handleStartSession}>Empezar sesión</Button>
+              <Button size="lg" onClick={handleStartSession}>
+                Empezar sesión
+              </Button>
             </VStack>
           )}
 

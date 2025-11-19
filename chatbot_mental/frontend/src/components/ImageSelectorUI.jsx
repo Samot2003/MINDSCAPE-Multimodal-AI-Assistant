@@ -1,14 +1,5 @@
-import React from "react";
-import {
-  Box,
-  VStack,
-  HStack,
-  Heading,
-  Text,
-  Button,
-  Image,
-  Spinner,
-} from "@chakra-ui/react";
+import React, { useEffect, useState } from "react";
+import { Box, VStack, HStack, Heading, Text, Button, Image, Spinner } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 
 const MotionBox = motion(Box);
@@ -19,7 +10,7 @@ const defaultImages = importAll(
   require.context("../assets/images", false, /\.(png|jpe?g|svg)$/)
 );
 
-const ImageSelectorUI = ({ selectedImage, loading, onSelectImage, onSubmit }) => {
+const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, onSubmit }) => {
   return (
     <VStack
       spacing={8}
@@ -88,10 +79,10 @@ const ImageSelectorUI = ({ selectedImage, loading, onSelectImage, onSubmit }) =>
           </>
         )}
 
-        {selectedImage && !loading && (
+        {selectedImage && !loading && previewURL && (
           <VStack spacing={4}>
             <Image
-              src={selectedImage instanceof File ? URL.createObjectURL(selectedImage) : selectedImage}
+              src={previewURL}
               alt="Vista previa"
               borderRadius="xl"
               maxH="250px"

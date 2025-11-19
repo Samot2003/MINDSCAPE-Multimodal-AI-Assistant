@@ -6,10 +6,11 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
-export const startChatWithImage = async (imageFile) => {
+export const startChatWithImage = async (imageFile, isDefault = false) => {
   try {
     const formData = new FormData();
     formData.append("file", imageFile);
+    formData.append("isDefault", isDefault);
     const response = await api.post("/start_chat", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });

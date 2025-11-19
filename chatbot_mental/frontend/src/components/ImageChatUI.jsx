@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   VStack,
@@ -6,12 +6,11 @@ import {
   Heading,
   Text,
   Button,
-  Image,
   Input,
   Spinner,
 } from "@chakra-ui/react";
-import { motion, AnimatePresence } from "framer-motion";
-import ColorThief from "color-thief";
+import { motion } from "framer-motion";
+import ColorThief from "color-thief-browser";
 
 const MotionBox = motion(Box);
 
@@ -29,14 +28,40 @@ const ImageChatUI = ({
   useEffect(() => {
     if (!selectedImage) return;
 
-    // Obtener color dominante de la imagen
     const image = imgRef.current;
-    if (image) {
-      const colorThief = new ColorThief();
-      const rgb = colorThief.getColor(image);
-      setBgColor(`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.4)`);
+    if (!image) return;
+
+    const handleLoad = () => {
+      try {
+        const colorThief = new ColorThief();
+        const rgb = colorThief.getColor(image);
+        setBgColor(`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.4)`);
+      } catch (err) {
+        console.warn("No se pudo extraer color de la imagen", err);
+      }
+    };
+
+    if (image.complete) {
+      handleLoad();
+    } else {
+      image.addEventListener("load", handleLoad);
+      return () => image.removeEventListener("load", handleLoad);
     }
   }, [selectedImage]);
+
+  // Limpieza de URLs de File para evitar leaks
+  const [objectUrl, setObjectUrl] = useState(null);
+  useEffect(() => {
+    if (selectedImage instanceof File) {
+      const url = URL.createObjectURL(selectedImage);
+      setObjectUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setObjectUrl(null);
+    }
+  }, [selectedImage]);
+
+  const displayImage = objectUrl || selectedImage;
 
   return (
     <VStack
@@ -48,7 +73,6 @@ const ImageChatUI = ({
       overflow="hidden"
       borderRadius="2xl"
     >
-      {/* Fondo dinámico */}
       {selectedImage && (
         <MotionBox
           position="absolute"
@@ -56,11 +80,7 @@ const ImageChatUI = ({
           left={0}
           w="100%"
           h="100%"
-          backgroundImage={`url(${
-            selectedImage instanceof File
-              ? URL.createObjectURL(selectedImage)
-              : selectedImage
-          })`}
+          backgroundImage={`url(${displayImage})`}
           backgroundSize="cover"
           backgroundPosition="center"
           filter="blur(20px) brightness(0.7)"
@@ -72,30 +92,14 @@ const ImageChatUI = ({
       )}
 
       <VStack spacing={4} zIndex={1} p={6}>
-        <Heading color="teal.50" size="lg" textAlign="center">
-          Mindscape AI
-        </Heading>
-        <Text
-          color="teal.100"
-          fontSize="sm"
-          textAlign="center"
-          maxW="500px"
-          lineHeight="1.5"
-        >
-          Reflexiona sobre tus emociones a partir de la imagen seleccionada. 
+        <Heading color="teal.50" size="lg" textAlign="center">Mindscape AI</Heading>
+        <Text color="teal.100" fontSize="sm" textAlign="center" maxW="500px" lineHeight="1.5">
+          Reflexiona sobre tus emociones a partir de la imagen seleccionada.
           La IA te acompañará en un diálogo empático.
         </Text>
       </VStack>
 
-      <HStack
-        spacing={4}
-        align="flex-start"
-        justify="center"
-        flexWrap="wrap"
-        w="95%"
-        zIndex={1}
-      >
-        {/* Panel de la conversación */}
+      <HStack spacing={4} align="flex-start" justify="center" flexWrap="wrap" w="95%" zIndex={1}>
         <MotionBox
           bg="rgba(255, 255, 255, 0.15)"
           backdropFilter="blur(10px)"
@@ -114,20 +118,13 @@ const ImageChatUI = ({
             minH="550px"
             css={{
               "&::-webkit-scrollbar": { width: "6px" },
-              "&::-webkit-scrollbar-thumb": {
-                background: "rgba(255,255,255,0.4)",
-                borderRadius: "3px",
-              },
+              "&::-webkit-scrollbar-thumb": { background: "rgba(255,255,255,0.4)", borderRadius: "3px" },
             }}
           >
             {chatMessages.map((msg, idx) => (
               <Box
                 key={idx}
-                bg={
-                  msg.sender === "bot"
-                    ? `rgba(${bgColor}, 0.6)`
-                    : `rgba(255,255,255,0.25)`
-                }
+                bg={msg.sender === "bot" ? bgColor.replace(/0\.4/, "0.6") : "rgba(255,255,255,0.25)"}
                 color="white"
                 p={2}
                 borderRadius="xl"
@@ -142,9 +139,7 @@ const ImageChatUI = ({
             {chatMessages.length === 0 && (
               <VStack align="center" mt={2}>
                 <Spinner color="teal.200" size="md" />
-                <Text color="teal.100" fontSize="sm">
-                  Iniciando chat...
-                </Text>
+                <Text color="teal.100" fontSize="sm">Iniciando chat...</Text>
               </VStack>
             )}
           </VStack>
@@ -170,7 +165,7 @@ const ImageChatUI = ({
               size="sm"
               isDisabled={loading || !userInput.trim()}
               leftIcon={loading ? <Spinner size="xs" /> : null}
-              opacity={loading ? 0.6 : 1}              
+              opacity={loading ? 0.6 : 1}
               cursor={loading ? "not-allowed" : "pointer"}
               transition="all 0.2s ease"
             >
@@ -180,20 +175,7 @@ const ImageChatUI = ({
         </MotionBox>
       </HStack>
 
-      {/* Imagen invisible para ColorThief */}
-      {selectedImage && (
-        <img
-          ref={imgRef}
-          src={
-            selectedImage instanceof File
-              ? URL.createObjectURL(selectedImage)
-              : selectedImage
-          }
-          crossOrigin="anonymous"
-          alt="Dominant"
-          style={{ display: "none" }}
-        />
-      )}
+      {selectedImage && <img ref={imgRef} src={displayImage} crossOrigin="anonymous" alt="Dominant" style={{ display: "none" }} />}
     </VStack>
   );
 };
