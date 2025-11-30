@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Box, VStack, HStack, Heading, Text, Button, Image, Spinner } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 
 const MotionBox = motion(Box);
 
-// Importa automáticamente todas las imágenes predeterminadas
 const importAll = (r) => r.keys().map(r);
 const defaultImages = importAll(
   require.context("../assets/images", false, /\.(png|jpe?g|svg)$/)
 );
 
 const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, onSubmit }) => {
+  const selectedDefaultImage =
+    typeof selectedImage === "number" ? defaultImages[selectedImage] : null;
+
   return (
     <VStack
       spacing={8}
@@ -23,28 +25,25 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
     >
       <Heading color="teal.700" size="lg">Sube una imagen 🌿</Heading>
       <Text color="gray.600" fontSize="md" textAlign="center" maxW="400px">
-        Elige una imagen que represente tu estado emocional.  
-        El chatbot reflexionará contigo a partir de ella.
+        Elige una imagen que represente tu estado emocional.
       </Text>
 
-      {/* Imágenes predeterminadas */}
       <HStack spacing={4} flexWrap="wrap" justify="center" w="100%">
         {defaultImages.map((img, i) => (
           <MotionBox
             key={i}
             borderRadius="xl"
             overflow="hidden"
-            boxShadow={selectedImage === img ? "0 0 0 3px teal" : "md"}
+            boxShadow={selectedImage === i ? "0 0 0 3px teal" : "md"}
             whileHover={{ scale: 1.05 }}
             cursor="pointer"
-            onClick={() => onSelectImage(img)}
+            onClick={() => onSelectImage(i)}
           >
             <Image src={img} alt={`Imagen ${i + 1}`} boxSize="100px" objectFit="cover" />
           </MotionBox>
         ))}
       </HStack>
 
-      {/* Área de subida / botón continuar */}
       <MotionBox
         bg="white"
         p={6}
@@ -53,9 +52,8 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
         w={["90%", "70%", "50%"]}
         textAlign="center"
         whileHover={{ scale: 1.02 }}
-        transition="all 0.2s ease-in-out"
       >
-        {!selectedImage && !loading && (
+        {!selectedDefaultImage && !previewURL && !loading && (
           <>
             <input
               id="file-upload"
@@ -72,40 +70,53 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
               rounded="full"
               px={8}
               cursor="pointer"
-              _hover={{ bg: "teal.500" }}
             >
               📁 Subir tu propia imagen
             </Button>
           </>
         )}
 
-        {selectedImage && !loading && previewURL && (
-          <VStack spacing={4}>
-            <Image
-              src={previewURL}
-              alt="Vista previa"
-              borderRadius="xl"
-              maxH="250px"
-              objectFit="cover"
-              boxShadow="md"
-            />
-            <Text fontSize="sm" color="gray.500">Imagen lista para analizar 🌱</Text>
+      {(selectedDefaultImage || previewURL) && !loading && (
+        <VStack spacing={4}>
+          <Image
+            src={selectedDefaultImage || previewURL}
+            alt="Vista previa"
+            borderRadius="xl"
+            maxH="250px"
+            objectFit="cover"
+            boxShadow="md"
+          />
+
+          <HStack spacing={4}>
             <Button
               colorScheme="teal"
               onClick={onSubmit}
               rounded="full"
-              px={8}
-              _hover={{ bg: "teal.500" }}
+              px={6}
             >
               Enviar imagen
             </Button>
-          </VStack>
-        )}
+
+            <Button
+              colorScheme="gray"
+              variant="outline"
+              rounded="full"
+              px={6}
+              onClick={() => {
+                onSelectImage(null);
+              }}
+            >
+              Cambiar imagen
+            </Button>
+          </HStack>
+        </VStack>
+      )}
+
 
         {loading && (
           <VStack spacing={4}>
-            <Spinner thickness="5px" speed="0.8s" emptyColor="gray.200" color="teal.500" size="xl" />
-            <Text fontSize="md" color="gray.600">Procesando tu imagen... ✨</Text>
+            <Spinner size="xl" />
+            <Text>Procesando tu imagen...</Text>
           </VStack>
         )}
       </MotionBox>

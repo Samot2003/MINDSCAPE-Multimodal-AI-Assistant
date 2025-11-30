@@ -14,6 +14,7 @@ export const startChatWithImage = async (imageFile, isDefault = false) => {
     const response = await api.post("/start_chat", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
+    // response.data ya contiene { mensaje, finished }
     return response.data;
   } catch (err) {
     console.error("Error en startChatWithImage:", err);
@@ -21,12 +22,12 @@ export const startChatWithImage = async (imageFile, isDefault = false) => {
   }
 };
 
-export const continueChat = async (userMessage, chatMessages) => {
+export const continueChat = async (chatMessages) => {
   try {
     const response = await api.post("/continue_chat", {
       historial: chatMessages,
     });
-
+    // response.data ya contiene { mensaje, finished }
     return response.data;
   } catch (err) {
     console.error("Error en continueChat:", err);
@@ -42,5 +43,15 @@ export const checkServerHealth = async () => {
     throw new Error("No se puede conectar con el servidor");
   }
 };
+
+export const getSummary = async (historial) => {
+  try {
+    const response = await api.post("/summary_chat", { historial });
+    return response.data; // { resumen: "..." }
+  } catch (err) {
+    throw new Error(err.response?.data?.error || err.message);
+  }
+};
+
 
 export default api;

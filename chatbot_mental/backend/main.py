@@ -23,10 +23,20 @@ async def health_check():
 @app.post("/start_chat")
 async def start_chat(file: UploadFile = File(...), isDefault: bool = Form(...)):
     image = file.file
-    pregunta = controller.start_chat(image, isDefault)
-    return {"pregunta": pregunta}
+    respuesta = controller.start_chat(image, isDefault)
+    return respuesta  # {"mensaje": "...", "finished": false}
 
 @app.post("/continue_chat")
 async def continue_chat(data: ChatRequest):
-    siguiente_mensaje = controller.continue_chat(data.historial)
-    return {"siguiente_mensaje": siguiente_mensaje}
+    respuesta = controller.continue_chat(data.historial)
+    print("CONTINUE_CHAT - finished:", respuesta.get("finished"))
+    return respuesta  # {"mensaje": "...", "finished": true|false}
+
+@app.post("/summary_chat")
+async def summary_chat(data: ChatRequest):
+    """
+    Genera un resumen de la conversación y del comportamiento del usuario.
+    """
+    historial = data.historial
+    resumen = controller.generate_summary(historial)
+    return {"resumen": resumen}

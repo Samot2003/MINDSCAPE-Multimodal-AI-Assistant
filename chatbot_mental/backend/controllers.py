@@ -9,3 +9,6 @@ class ChatbotController:
 
     def continue_chat(self, historial):
         return self.model.continue_chat(historial)
+
+    def generate_summary(self, historial):
+        return self.model.generate_summary(historial)

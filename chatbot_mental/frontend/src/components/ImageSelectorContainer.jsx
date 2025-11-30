@@ -3,16 +3,34 @@ import { useToast } from "@chakra-ui/react";
 import { startChatWithImage } from "../services/api";
 import ImageSelectorUI from "./ImageSelectorUI";
 
+const importAll = (r) => r.keys().map(r);
+const defaultImages = importAll(
+  require.context("../assets/images", false, /\.(png|jpe?g|svg)$/)
+);
+
 const ImageSelectorContainer = ({ onImageSelected }) => {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [previewURL, setPreviewURL] = useState(null);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
   const handleSelectImage = (input) => {
+    if (input === null) {
+      setSelectedImage(null);
+      setPreviewURL(null);
+      return;
+    }
+
     if (input.target?.files && input.target.files[0]) {
-      setSelectedImage({ file: input.target.files[0], isDefault: false });
-    } else if (typeof input === "string") {
-      setSelectedImage({ file: input, isDefault: true });
+      const file = input.target.files[0];
+      setSelectedImage({ file, isDefault: false, index: null });
+      setPreviewURL(URL.createObjectURL(file));
+      return;
+    }
+
+    if (typeof input === "number") {
+      setSelectedImage({ file: defaultImages[input], isDefault: true, index: input });
+      setPreviewURL(null);
     }
   };
 
@@ -22,30 +40,21 @@ const ImageSelectorContainer = ({ onImageSelected }) => {
 
     try {
       let imageToSend = selectedImage.file;
-      const isDefault = selectedImage.isDefault;
 
-      // Convertir URL predeterminada a File si es necesario
-      if (typeof imageToSend === "string") {
+      if (selectedImage.isDefault && typeof imageToSend === "string") {
         const response = await fetch(imageToSend);
         const blob = await response.blob();
         imageToSend = new File([blob], "default.png", { type: blob.type });
       }
 
-      // Enviar imagen + isDefault a la API
-      const { pregunta } = await startChatWithImage(imageToSend, isDefault);
+      const { mensaje, finished } = await startChatWithImage(imageToSend, selectedImage.isDefault);
 
-      if (!pregunta) throw new Error("No se recibió pregunta del backend");
+      if (!mensaje) throw new Error("No hay respuesta del backend");
 
-      onImageSelected({ image: imageToSend, pregunta });
+      // Enviamos la pregunta inicial al chat
+      onImageSelected({ image: imageToSend, mensaje, finished });
     } catch (err) {
-      console.error(err);
-      toast({
-        title: "Error al procesar la imagen",
-        description: err.message || "Intenta nuevamente.",
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-      });
+      toast({ title: "Error", description: err.message, status: "error" });
     } finally {
       setLoading(false);
     }
@@ -53,7 +62,8 @@ const ImageSelectorContainer = ({ onImageSelected }) => {
 
   return (
     <ImageSelectorUI
-      selectedImage={selectedImage?.file || null}
+      selectedImage={selectedImage?.isDefault ? selectedImage.index : selectedImage?.file || null}
+      previewURL={previewURL}
       loading={loading}
       onSelectImage={handleSelectImage}
       onSubmit={handleSubmit}

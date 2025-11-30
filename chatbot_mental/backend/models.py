@@ -1,6 +1,7 @@
 import google.generativeai as genai
 from PIL import Image
 import os
+import json
 from dotenv import load_dotenv
 
 class GeminiModel:
@@ -14,42 +15,101 @@ class GeminiModel:
         self.model = genai.GenerativeModel("gemini-2.5-flash")
         print(f"Usando modelo: {self.model}")
 
+    # ------------------- UTILIDAD PARA PARSEAR RESPUESTAS -------------------
+    def _parse_response(self, response):
+        """
+        Intenta extraer el JSON devuelto por Gemini.
+        Garantiza que SIEMPRE se devuelva solo mensaje y finished.
+        """
+
+        raw = response.text.strip()
+
+        # 1. Si Gemini devolvió directamente un JSON válido
+        try:
+            salida = json.loads(raw)
+            return salida.get("mensaje", ""), salida.get("finished", False)
+        except:
+            pass
+
+        # 2. Si Gemini devolvió JSON incrustado dentro de texto
+        try:
+            start = raw.index("{")
+            end = raw.rindex("}") + 1
+            posible_json = raw[start:end]
+            salida = json.loads(posible_json)
+            return salida.get("mensaje", ""), salida.get("finished", False)
+        except:
+            pass
+
+        # 3. Última opción: devolver texto plano
+        return raw, False
+    
     def start_chat(self, image_file, isDefault):
         image = Image.open(image_file)
         image.thumbnail((512, 512))
 
         if isDefault:
-            prompt = f"""
-            Ponte en situacion eres una IA diseñada para ayudar a la gente a expresar 
-            sus sentimientos para poder procesarlos y reflexionar sobre ellos. 
-            
-            Desde este prisma el usuario te adjunta una imagen {image} predeterminada que ha escogido sobre la que quiere hacer una reflexión. 
-            Genera una pregunta para iniciar la conversación de forma natural que invite al usuario a expresar sus sentimientos.
+            prompt = """
+            Eres una IA que ayuda a reflexionar sobre emociones.
+            El usuario ha escogido una imagen predeterminada.
+            Genera una pregunta inicial.
+            Devuelve EXCLUSIVAMENTE un JSON así:
+            {
+                "mensaje": "...",
+                "finished": false
+            }
             """
         else:
-            prompt = f"""
-            Eres una IA diseñada para ayudar a la gente a expresar sus sentimientos
-            y reflexionar sobre ellos.
-
-            El usuario ha subido su propia creación: {image}.
-            Genera una pregunta inicial para iniciar una conversación natural,
-            considerando que la imagen es creación del usuario.
-            Invita al usuario a expresar sus sentimientos y reflexiones respecto a la imagen.
+            prompt = """
+            Eres una IA que ayuda a reflexionar sobre emociones.
+            El usuario ha subido su propia creación.
+            Genera una pregunta inicial.
+            Devuelve EXCLUSIVAMENTE un JSON así:
+            {
+                "mensaje": "...",
+                "finished": false
+            }
             """
+
+        # 🔹 Sin response_mime_type
         response = self.model.generate_content([prompt, image])
-        return response.text
+        mensaje, finished = self._parse_response(response)
+        return {"mensaje": mensaje, "finished": finished}
+
 
     def continue_chat(self, historial):
-
         prompt = f"""
-        Te muestro el historial de la conversacion para que tengas contexto:
+        Aquí está el historial de la conversación:
         {historial}
 
-        Sin mostrar el historial por pantalla, continúa la 
-        conversación como si fueras el terapeuta empático,
-        ofreciendo una reflexión o pregunta que invite al
-        usuario a profundizar en lo que siente, sin sonar
-        robótico, ser invasivo o dar consejos.
+        Eres un terapeuta virtual empático.
+        Continúa la conversación de forma natural.
+        Devuelve EXCLUSIVAMENTE un JSON así:
+        {{
+            "mensaje": "respuesta natural",
+            "finished": true|false
+        }}
+        """
+        # 🔹 Sin response_mime_type
+        response = self.model.generate_content(prompt)
+        mensaje, finished = self._parse_response(response)
+        return {"mensaje": mensaje, "finished": finished}
+
+    def generate_summary(self, historial):
+
+        historial_texto = "\n".join([f"{m['sender']}: {m['text']}" for m in historial])
+
+        prompt = f"""
+        Has mantenido la siguiente conversación con un usuario:
+        {historial_texto}
+
+        Haz un resumen breve de la conversación, 
+        destacando los temas principales y el comportamiento 
+        del usuario. 
+        Devuélvelo como texto plano.
         """
         response = self.model.generate_content(prompt)
-        return response.text
+        try:
+            return response.text.strip()
+        except:
+            return "No se pudo generar resumen."
