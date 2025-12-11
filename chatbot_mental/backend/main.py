@@ -2,6 +2,9 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from controllers import ChatbotController
+from fastapi.responses import StreamingResponse
+from controllers import generar_pdf_resumen
+
 
 app = FastAPI()
 controller = ChatbotController()
@@ -40,3 +43,17 @@ async def summary_chat(data: ChatRequest):
     historial = data.historial
     resumen = controller.generate_summary(historial)
     return {"resumen": resumen}
+
+@app.post("/summary_pdf")
+async def summary_pdf(data: ChatRequest):
+    historial = data.historial
+    resumen = controller.generate_summary(historial)
+    pdf_buffer = generar_pdf_resumen(resumen)
+
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": "attachment; filename=resumen_conversacion.pdf"
+        }
+    )

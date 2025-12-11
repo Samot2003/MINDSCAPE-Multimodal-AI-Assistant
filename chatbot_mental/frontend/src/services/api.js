@@ -53,5 +53,15 @@ export const getSummary = async (historial) => {
   }
 };
 
+export const downloadSummaryPdf = async (historial) => {
+  try {
+    const response = await api.post("/summary_pdf", { historial }, {
+      responseType: "blob", // muy importante
+    });
+    return response.data; // retorna el blob del PDF
+  } catch (err) {
+    throw new Error(err.response?.data?.error || err.message);
+  }
+};
 
 export default api;

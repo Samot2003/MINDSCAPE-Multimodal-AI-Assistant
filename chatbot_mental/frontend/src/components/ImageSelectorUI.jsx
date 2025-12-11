@@ -22,6 +22,7 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
       bgGradient="linear(to-br, green.50, teal.50)"
       borderRadius="2xl"
       p={8}
+      w="100%"
     >
       <Heading color="teal.700" size="lg">Sube una imagen 🌿</Heading>
       <Text color="gray.600" fontSize="md" textAlign="center" maxW="400px">

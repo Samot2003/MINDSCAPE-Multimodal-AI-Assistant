@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useToast, Button, VStack } from "@chakra-ui/react";
-import { continueChat, getSummary } from "../services/api";
+import { continueChat, getSummary, downloadSummaryPdf } from "../services/api";
 import ImageChatUI from "./ImageChatUI";
 
 const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
@@ -60,12 +60,25 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
     setFinished(false);
   };
 
-  const handleGetSummary = async () => {
+  const handleDownloadPdf = async () => {
     try {
-      const res = await getSummary(chatMessages);
-      setSummary(res.resumen);
+      const blob = await downloadSummaryPdf(chatMessages);
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "resumen_conversacion.pdf";
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (err) {
-      console.error(err);
+      console.error("Error descargando PDF:", err);
+      toast({
+        title: "Error",
+        description: "No se pudo generar el PDF",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -83,6 +96,11 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
       {finished && (
         <Button colorScheme="teal" onClick={handleRestart}>
           Reiniciar conversación
+        </Button>
+      )}
+      {finished && (
+        <Button colorScheme="blue" onClick={handleDownloadPdf}>
+          Descargar resumen en PDF
         </Button>
       )}
     </VStack>

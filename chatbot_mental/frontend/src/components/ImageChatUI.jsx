@@ -11,6 +11,8 @@ import {
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import ColorThief from "color-thief-browser";
+import TextareaAutosize from "react-textarea-autosize";
+
 
 const MotionBox = motion(Box);
 
@@ -24,6 +26,14 @@ const ImageChatUI = ({
 }) => {
   const [bgColor, setBgColor] = useState("rgba(72, 187, 120, 0.4)");
   const imgRef = useRef(null);
+
+  const chatRef = useRef(null);
+
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
 
   useEffect(() => {
     if (!selectedImage) return;
@@ -49,7 +59,6 @@ const ImageChatUI = ({
     }
   }, [selectedImage]);
 
-  // Limpieza de URLs de File para evitar leaks
   const [objectUrl, setObjectUrl] = useState(null);
   useEffect(() => {
     if (selectedImage instanceof File) {
@@ -72,6 +81,7 @@ const ImageChatUI = ({
       position="relative"
       overflow="hidden"
       borderRadius="2xl"
+      w ="270%"
     >
       {selectedImage && (
         <MotionBox
@@ -105,20 +115,24 @@ const ImageChatUI = ({
           backdropFilter="blur(10px)"
           borderRadius="2xl"
           boxShadow="xl"
-          w={["90%", "70%", "55%"]}
+          w={["95%", "85%", "65%"]}
           display="flex"
           flexDirection="column"
         >
+          {/* Chat con scroll interno */}
           <VStack
+            ref={chatRef}
             spacing={2}
             align="stretch"
-            flex="1"
             overflowY="auto"
             pr={2}
-            minH="550px"
+            h="550px"   // 👈 tamaño fijo grande
             css={{
               "&::-webkit-scrollbar": { width: "6px" },
-              "&::-webkit-scrollbar-thumb": { background: "rgba(255,255,255,0.4)", borderRadius: "3px" },
+              "&::-webkit-scrollbar-thumb": {
+                background: "rgba(255,255,255,0.4)",
+                borderRadius: "3px"
+              },
             }}
           >
             {chatMessages.map((msg, idx) => (
@@ -144,19 +158,28 @@ const ImageChatUI = ({
             )}
           </VStack>
 
+          {/* Input */}
           <HStack mt={3} spacing={2}>
-            <Input
+            <Box
+              as={TextareaAutosize}
+              minRows={1}
+              maxRows={6}      // 🔥 controla cuánto puede crecer
               placeholder="Escribe tu respuesta..."
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              isDisabled={loading}
               onKeyDown={(e) => e.key === "Enter" && !loading && handleSend()}
-              size="sm"
-              bg="rgba(255,255,255,0.3)"
-              color="white"
-              flex="1"
+              style={{
+                width: "100%",
+                resize: "none",
+                background: "rgba(255,255,255,0.3)",
+                color: "white",
+                padding: "8px",
+                borderRadius: "12px",
+                fontSize: "14px",
+                lineHeight: "1.4",
+              }}
             />
-
+            
             <Button
               colorScheme="teal"
               onClick={handleSend}
@@ -175,7 +198,15 @@ const ImageChatUI = ({
         </MotionBox>
       </HStack>
 
-      {selectedImage && <img ref={imgRef} src={displayImage} crossOrigin="anonymous" alt="Dominant" style={{ display: "none" }} />}
+      {selectedImage && (
+        <img
+          ref={imgRef}
+          src={displayImage}
+          crossOrigin="anonymous"
+          alt="Dominant"
+          style={{ display: "none" }}
+        />
+      )}
     </VStack>
   );
 };
