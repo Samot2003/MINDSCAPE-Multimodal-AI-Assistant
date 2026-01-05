@@ -15,44 +15,71 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
 
   return (
     <VStack
+      minH="100vh"
+      justify="flex-start"
       spacing={8}
-      align="center"
-      justify="center"
-      minH="80vh"
-      bgGradient="linear(to-br, green.50, teal.50)"
-      borderRadius="2xl"
-      p={8}
-      w="100%"
+      position="relative"
+      overflow="hidden"
+      bg="linear-gradient(160deg, #f5f7f6, #eef2f1)"
     >
-      <Heading color="teal.700" size="lg">Sube una imagen 🌿</Heading>
-      <Text color="gray.600" fontSize="md" textAlign="center" maxW="400px">
-        Elige una imagen que represente tu estado emocional.
-      </Text>
+      {/* Fondo orgánico */}
+      <MotionBox
+        position="absolute"
+        inset={0}
+        bg="radial-gradient(circle at 30% 20%, rgba(0,0,0,0.06), transparent 60%)"
+        animate={{ opacity: [0.4, 0.7, 0.4] }}
+        transition={{ duration: 25, repeat: Infinity }}
+        zIndex={0}
+      />
 
-      <HStack spacing={4} flexWrap="wrap" justify="center" w="100%">
+      {/* Texto como pieza */}
+      <VStack spacing={3} zIndex={1} textAlign="center">
+        <Heading fontSize="4xl" fontWeight="500" letterSpacing="1px">
+          Elige una imagen
+        </Heading>
+        <Text maxW="480px" fontSize="sm" color="gray.600" lineHeight="1.8">
+          No busques la correcta. Elige la que te mire primero.
+        </Text>
+      </VStack>
+
+      {/* Galería flotante */}
+      <HStack
+        spacing={4}
+        wrap="wrap"
+        justify="center"
+        zIndex={1}
+        maxW="900px"
+      >
         {defaultImages.map((img, i) => (
           <MotionBox
             key={i}
-            borderRadius="xl"
+            whileHover={{ scale: 1.08, rotate: i % 2 === 0 ? 1 : -1 }}
+            transition={{ type: "spring", stiffness: 120 }}
+            borderRadius="3xl"
             overflow="hidden"
-            boxShadow={selectedImage === i ? "0 0 0 3px teal" : "md"}
-            whileHover={{ scale: 1.05 }}
+            boxShadow={
+              selectedImage === i
+                ? "0 0 0 3px rgba(0,0,0,0.25)"
+                : "0 20px 40px rgba(0,0,0,0.1)"
+            }
             cursor="pointer"
             onClick={() => onSelectImage(i)}
           >
-            <Image src={img} alt={`Imagen ${i + 1}`} boxSize="100px" objectFit="cover" />
+            <Image src={img} boxSize="70px" objectFit="cover" />
           </MotionBox>
         ))}
       </HStack>
 
+      {/* Acción */}
       <MotionBox
-        bg="white"
-        p={6}
-        borderRadius="2xl"
-        boxShadow="xl"
-        w={["90%", "70%", "50%"]}
+        zIndex={1}
+        bg="rgba(255,255,255,0.7)"
+        backdropFilter="blur(12px)"
+        px={10}
+        py={8}
+        borderRadius="3xl"
+        boxShadow="0 40px 80px rgba(0,0,0,0.15)"
         textAlign="center"
-        whileHover={{ scale: 1.02 }}
       >
         {!selectedDefaultImage && !previewURL && !loading && (
           <>
@@ -63,63 +90,40 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
               style={{ display: "none" }}
               onChange={onSelectImage}
             />
-            <Button
-              as="label"
-              htmlFor="file-upload"
-              size="lg"
-              colorScheme="teal"
-              rounded="full"
-              px={8}
-              cursor="pointer"
-            >
-              📁 Subir tu propia imagen
+            <Button as="label" htmlFor="file-upload" variant="ghost" fontSize="sm">
+              O subir una imagen propia
             </Button>
           </>
         )}
 
-      {(selectedDefaultImage || previewURL) && !loading && (
-        <VStack spacing={4}>
-          <Image
-            src={selectedDefaultImage || previewURL}
-            alt="Vista previa"
-            borderRadius="xl"
-            maxH="250px"
-            objectFit="cover"
-            boxShadow="md"
-          />
-
-          <HStack spacing={4}>
-            <Button
-              colorScheme="teal"
-              onClick={onSubmit}
-              rounded="full"
-              px={6}
-            >
-              Enviar imagen
-            </Button>
-
-            <Button
-              colorScheme="gray"
-              variant="outline"
-              rounded="full"
-              px={6}
-              onClick={() => {
-                onSelectImage(null);
-              }}
-            >
-              Cambiar imagen
-            </Button>
-          </HStack>
-        </VStack>
-      )}
-
-
-        {loading && (
-          <VStack spacing={4}>
-            <Spinner size="xl" />
-            <Text>Procesando tu imagen...</Text>
+        {(selectedDefaultImage || previewURL) && !loading && (
+          <VStack spacing={5}>
+            <Image src={selectedDefaultImage || previewURL} borderRadius="2xl" maxH="280px" />
+            <HStack spacing={4}>
+              <Button
+                onClick={onSubmit}
+                rounded="full"
+                px={8}
+                bg="black"
+                color="white"
+                _hover={{ bg: "gray.800" }}
+              >
+                Entrar en el diálogo
+              </Button>
+              {/* Botón para volver a la selección */}
+              <Button
+                variant="outline"
+                rounded="full"
+                px={6}
+                onClick={() => onSelectImage(null)}
+              >
+                Cambiar imagen
+              </Button>
+            </HStack>
           </VStack>
         )}
+
+        {loading && <Spinner />}
       </MotionBox>
     </VStack>
   );
