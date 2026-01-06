@@ -4,12 +4,14 @@ import { motion } from "framer-motion";
 
 const MotionBox = motion(Box);
 
+// Importa todas las imágenes predeterminadas desde la carpeta de assets
 const importAll = (r) => r.keys().map(r);
 const defaultImages = importAll(
   require.context("../assets/images", false, /\.(png|jpe?g|svg)$/)
 );
 
 const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, onSubmit }) => {
+  // Determina si la imagen seleccionada es una imagen predeterminada
   const selectedDefaultImage =
     typeof selectedImage === "number" ? defaultImages[selectedImage] : null;
 
@@ -22,7 +24,7 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
       overflow="hidden"
       bg="linear-gradient(160deg, #f5f7f6, #eef2f1)"
     >
-      {/* Fondo orgánico */}
+      {/* Fondo dinámico con animación */}
       <MotionBox
         position="absolute"
         inset={0}
@@ -32,7 +34,7 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
         zIndex={0}
       />
 
-      {/* Texto como pieza */}
+      {/* Encabezado y descripción */}
       <VStack spacing={3} zIndex={1} textAlign="center">
         <Heading fontSize="4xl" fontWeight="500" letterSpacing="1px">
           Elige una imagen
@@ -42,7 +44,7 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
         </Text>
       </VStack>
 
-      {/* Galería flotante */}
+      {/* Galería de imágenes predeterminadas */}
       <HStack
         spacing={4}
         wrap="wrap"
@@ -70,7 +72,7 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
         ))}
       </HStack>
 
-      {/* Acción */}
+      {/* Zona de acciones: subir imagen o confirmar selección */}
       <MotionBox
         zIndex={1}
         bg="rgba(255,255,255,0.7)"
@@ -91,7 +93,7 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
               onChange={onSelectImage}
             />
             <Button as="label" htmlFor="file-upload" variant="ghost" fontSize="sm">
-              O subir una imagen propia
+              Sube una imagen propia
             </Button>
           </>
         )}
@@ -110,7 +112,6 @@ const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, on
               >
                 Entrar en el diálogo
               </Button>
-              {/* Botón para volver a la selección */}
               <Button
                 variant="outline"
                 rounded="full"

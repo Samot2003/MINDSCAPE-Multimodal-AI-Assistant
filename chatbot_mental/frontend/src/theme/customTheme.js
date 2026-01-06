@@ -4,7 +4,7 @@ const customTheme = extendTheme({
   styles: {
     global: {
       body: {
-        bgGradient: "linear(to-b, #e6f4ea, #cde8d1)", // fondo verde suave
+        bgGradient: "linear(to-b, #e6f4ea, #cde8d1)",
         color: "#1a202c",
         fontFamily: "'Inter', sans-serif",
         lineHeight: "tall",

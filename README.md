@@ -10,20 +10,21 @@ Una aplicación web que combina React y FastAPI para analizar imágenes usando G
 - **API Robusta**: Backend desarrollado con FastAPI
 - **Reflexiones Terapéuticas**: Genera reflexiones desde la perspectiva de un arte terapeuta
 
-## 📋 Prerrequisitos
+## 📋 Requisitos
 
-- **Python 3.8+**
+- **Python 3.12+**
 - **Node.js 16+**
-- **npm o yarn**
+- **npm**
 - **Clave API de Google Gemini**
 
-## 🛠️ Instalación
+## 🛠️ Instalación y Ejecución
 
 ### 1. Configurar el Backend
 
-```bash
-# Navegar al directorio del backend
-cd chatbot_mental/backend
+1. Navega al directorio del backend:
+   ```bash
+   cd chatbot_mental/backend
+   ```
 
 # Instalar dependencias
 python -m pip install -r requirements.txt

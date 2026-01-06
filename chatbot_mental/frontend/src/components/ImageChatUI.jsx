@@ -22,20 +22,27 @@ const ImageChatUI = ({
   handleSend,
   loading,
 }) => {
+  // Estado para el color de fondo dinámico basado en la imagen
   const [bgColor, setBgColor] = useState("rgba(255,255,255,0.15)");
   const imgRef = useRef(null);
   const chatRef = useRef(null);
 
+  // Desplazamiento automático al final del chat cuando hay nuevos mensajes
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
   }, [chatMessages]);
 
+  // Detecta el color dominante de la imagen seleccionada
   useEffect(() => {
-    if (!selectedImage) return;
+    if (!selectedImage) {
+      return;
+    }
     const image = imgRef.current;
-    if (!image) return;
+    if (!image) {
+      return;
+    }
 
     const handleLoad = () => {
       try {
@@ -49,26 +56,30 @@ const ImageChatUI = ({
     return () => image.removeEventListener("load", handleLoad);
   }, [selectedImage]);
 
+  // Genera una URL para mostrar la imagen seleccionada
   const [objectUrl, setObjectUrl] = useState(null);
   useEffect(() => {
     if (selectedImage instanceof File) {
       const url = URL.createObjectURL(selectedImage);
       setObjectUrl(url);
       return () => URL.revokeObjectURL(url);
-    } else setObjectUrl(null);
+    } else {
+      setObjectUrl(null);
+    }
   }, [selectedImage]);
 
   const displayImage = objectUrl || selectedImage;
 
   return (
-   <VStack
+    <VStack
       minH="90vh"
-      w="100%"         // Contenedor principal ocupa todo el ancho
+      w="100%"
       position="relative"
       overflow="hidden"
       align="center"
       spacing={0}
     >
+      {/* Fondo dinámico basado en la imagen seleccionada */}
       {selectedImage && (
         <MotionBox
           position="absolute"
@@ -82,6 +93,7 @@ const ImageChatUI = ({
         />
       )}
 
+      {/* Título de la aplicación */}
       <MotionBox mt={12} mb={6} zIndex={2} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
         <Heading
           color="white"
@@ -94,12 +106,12 @@ const ImageChatUI = ({
         </Heading>
       </MotionBox>
 
-      {/* ZONA CHAT */}
+      {/* Zona del chat donde se muestran los mensajes */}
       <MotionBox
         ref={chatRef}
         zIndex={2}
-        w="98%"           // ¡Casi todo el ancho de la pantalla!
-        maxW="1600px"     // Máximo ancho para pantallas grandes
+        w="98%"
+        maxW="1600px"
         h="70vh"
         overflowY="auto"
         px={8}
@@ -114,7 +126,7 @@ const ImageChatUI = ({
               <MotionBox
                 key={idx}
                 alignSelf={isBot ? "flex-start" : "flex-end"}
-                maxW="90%"       // Mensajes más anchos
+                maxW="90%"
                 px={6}
                 py={4}
                 bg={isBot ? bgColor : "rgba(0,0,0,0.35)"}
@@ -132,6 +144,7 @@ const ImageChatUI = ({
             );
           })}
 
+          {/* Mensaje de carga cuando no hay mensajes */}
           {chatMessages.length === 0 && (
             <VStack pt={20}>
               <Spinner color="whiteAlpha.600" />
@@ -143,10 +156,10 @@ const ImageChatUI = ({
         </VStack>
       </MotionBox>
 
-      {/* INPUT */}
+      {/* Input para escribir mensajes */}
       <MotionBox
         zIndex={3}
-        w="95%"          // Input ancho como chat
+        w="95%"
         maxW="1600px"
         mt={4}
         mb={10}

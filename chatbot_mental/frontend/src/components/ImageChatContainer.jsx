@@ -4,6 +4,7 @@ import { continueChat, getSummary, downloadSummaryPdf } from "../services/api";
 import ImageChatUI from "./ImageChatUI";
 
 const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
+  // Manejo de estados para el chat, entrada del usuario y estado de carga
   const toast = useToast();
   const [chatMessages, setChatMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
@@ -12,23 +13,28 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
   const chatEndRef = useRef(null);
   const [summary, setSummary] = useState("");
 
-  // Cuando llega la pregunta inicial, la añadimos al chat
+  // Agrega la pregunta inicial al chat cuando está disponible
   useEffect(() => {
-    if (!initialQuestion || !initialQuestion.mensaje) return;
+    if (!initialQuestion || !initialQuestion.mensaje) {
+      return;
+    }
 
     setChatMessages([{ sender: "bot", text: initialQuestion.mensaje }]);
     setFinished(initialQuestion.finished || false);
   }, [initialQuestion]);
 
-  // Scroll automático al final del chat
+  // Desplazamiento automático al final del chat cuando se actualizan los mensajes
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatMessages]);
 
+  // Maneja el envío de mensajes del usuario y la respuesta del bot
   const handleSend = async () => {
-    if (!userInput.trim() || finished) return;
+    if (!userInput.trim() || finished) {
+      return;
+    }
 
     const newMessage = { sender: "user", text: userInput };
     const updatedChat = [...chatMessages, newMessage];
@@ -54,12 +60,14 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
     }
   };
 
+  // Reinicia la conversación y limpia los estados
   const handleRestart = () => {
     setChatMessages([]);
     setUserInput("");
     setFinished(false);
   };
 
+  // Descarga el resumen de la conversación en formato PDF
   const handleDownloadPdf = async () => {
     try {
       const blob = await downloadSummaryPdf(chatMessages);
@@ -71,7 +79,6 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Error descargando PDF:", err);
       toast({
         title: "Error",
         description: "No se pudo generar el PDF",

@@ -13,23 +13,31 @@ import ImageChatContainer from "./components/ImageChatContainer";
 import customTheme from "./theme/customTheme";
 
 function App() {
-  
+
+  // Estado para manejar la vista actual (home o image-chat)
   const [view, setView] = useState("home");
+
+  // Estado para almacenar la imagen seleccionada
   const [selectedImage, setSelectedImage] = useState(null);
+
+  // Estado para almacenar la pregunta inicial generada por el backend
   const [initialQuestion, setInitialQuestion] = useState(null);
 
+  // Cambia la vista a "image-chat" cuando se inicia una sesión
   const handleStartSession = () => {
     setView("image-chat");
   };
 
-  const handleImageSelected = ({ image, mensaje, pregunta, finished }) => {
+  // Maneja la imagen seleccionada y la pregunta inicial recibida del backend
+  const handleImageSelected = ({ image, message, pregunta, finished }) => {
     setSelectedImage(image);
     setInitialQuestion({
-      mensaje: mensaje || pregunta,  // ← esta línea lo arregla todo
+      message: message || pregunta,
       finished: finished || false
     });
   };
 
+  // Vuelve a la vista inicial (home) y resetea los estados
   const handleBackHome = () => {
     setSelectedImage(null);
     setInitialQuestion(null);
@@ -86,7 +94,7 @@ function App() {
                   transform: "translateY(-2px)",
                 }}
                 transition="all 0.25s ease"
-                onClick={handleStartSession}   // 🔒 lógica intacta
+                onClick={handleStartSession}
               >
                 Empezar sesión
               </Button>
@@ -111,7 +119,7 @@ function App() {
                 alignSelf="flex-start"
                 variant="ghost"
                 fontSize="sm"
-                onClick={handleBackHome}   // 🔒 lógica intacta
+                onClick={handleBackHome}
               >
                 ← Volver
               </Button>
