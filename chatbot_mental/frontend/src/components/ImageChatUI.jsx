@@ -110,7 +110,7 @@ const ImageChatUI = ({
       <MotionBox
         ref={chatRef}
         zIndex={2}
-        w="98%"
+        w="100%"
         maxW="1600px"
         h="70vh"
         overflowY="auto"

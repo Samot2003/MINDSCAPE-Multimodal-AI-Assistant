@@ -54,14 +54,14 @@ const ImageSelectorContainer = ({ onImageSelected }) => {
         imageToSend = new File([blob], "default.png", { type: blob.type });
       }
 
-      const { mensaje, finished } = await startChatWithImage(imageToSend, selectedImage.isDefault);
+      const { message, finished } = await startChatWithImage(imageToSend, selectedImage.isDefault);
 
-      if (!mensaje) {
+      if (!message) {
         toast({ title: "Error", description: "No se pudo iniciar la conversación", status: "error" });
       }
 
       // Envía la pregunta inicial al componente padre
-      onImageSelected({ image: imageToSend, mensaje, finished });
+      onImageSelected({ image: imageToSend, message, finished });
     } catch (err) {
       toast({ title: "Error", description: err.message, status: "error" });
     } finally {

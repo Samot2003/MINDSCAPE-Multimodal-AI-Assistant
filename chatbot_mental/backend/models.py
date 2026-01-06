@@ -49,9 +49,10 @@ class GeminiModel:
 
         if is_default:
             prompt = """
-            Eres una IA que ayuda a reflexionar sobre emociones.
-            El usuario ha escogido una imagen predeterminada.
-            Genera una pregunta inicial.
+            Eres una IA que ayuda a reflexionar sobre emociones del usuario que 
+            ha escogido una imagen predeterminada para transmitir sus emociones.
+            De forma reflexiva y empática genera una pregunta inicial para fomentar
+            la autoexploración del usuario sobre sus sentimientos basandote en la imagen.
             Devuelve EXCLUSIVAMENTE un JSON así:
             {
                 "message": "...",
@@ -60,9 +61,10 @@ class GeminiModel:
             """
         else:
             prompt = """
-            Eres una IA que ayuda a reflexionar sobre emociones.
-            El usuario ha subido su propia creación.
-            Genera una pregunta inicial.
+            Eres una IA que ayuda a reflexionar sobre emociones del usuario que 
+            ha creado una imagen para transmitir sus emociones.
+            De forma reflexiva y empática genera una pregunta inicial para fomentar
+            la autoexploración del usuario sobre sus sentimientos basandote en la imagen.
             Devuelve EXCLUSIVAMENTE un JSON así:
             {
                 "message": "...",
@@ -81,8 +83,11 @@ class GeminiModel:
         Aquí está el historial de la conversación:
         {history}
 
-        Eres un terapeuta virtual empático.
-        Continúa la conversación de forma natural.
+        Eres una IA que ayuda a reflexionar sobre emociones del usuario que 
+        ha creado una imagen para transmitir sus emociones. Continua con la 
+        conversacion de forma empatica y sin juzgar ayudando al usuario a
+        fomentar la autoexploracion. Si el usuario parece querer dar la 
+        conversacion por finalizada despidete y marca finished como true.
         Devuelve EXCLUSIVAMENTE un JSON así:
         {{
             "message": "respuesta natural",
@@ -102,8 +107,9 @@ class GeminiModel:
         {history_text}
 
         Haz un resumen breve de la conversación, 
-        destacando los temas principales y el comportamiento 
-        del usuario. 
+        destacando los temas principales y como el 
+        usuario ha indagado en sus propios sentimientos,
+        teniendo en cuenta los puntos mas claves de la conversacion.
         Devuélvelo como texto plano.
         """
         response = self.model.generate_content(prompt)

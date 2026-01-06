@@ -11,14 +11,14 @@ const api = axios.create({
 /**
  * Inicia un chat con una imagen proporcionada.
  * @param {File} imageFile - Archivo de imagen seleccionado por el usuario.
- * @param {boolean} isDefault - Indica si se utiliza una imagen predeterminada.
+ * @param {boolean} is_default - Indica si se utiliza una imagen predeterminada.
  * @returns {Object} Respuesta del backend con el mensaje inicial y el estado.
  */
-export const startChatWithImage = async (imageFile, isDefault = false) => {
+export const startChatWithImage = async (imageFile, is_default = false) => {
   try {
     const formData = new FormData();
     formData.append("file", imageFile);
-    formData.append("isDefault", isDefault);
+    formData.append("is_default", is_default);
     const response = await api.post("/start_chat", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
@@ -37,7 +37,7 @@ export const startChatWithImage = async (imageFile, isDefault = false) => {
 export const continueChat = async (chatMessages) => {
   try {
     const response = await api.post("/continue_chat", {
-      historial: chatMessages,
+      history: chatMessages,
     });
     return response.data; // { message, finished }
   } catch (err) {
@@ -61,12 +61,12 @@ export const checkServerHealth = async () => {
 
 /**
  * Obtiene un resumen de la conversación.
- * @param {Array} historial - Historial de mensajes del chat.
+ * @param {Array} history - Historial de mensajes del chat.
  * @returns {Object} Respuesta del backend con el resumen generado.
  */
-export const getSummary = async (historial) => {
+export const getSummary = async (history) => {
   try {
-    const response = await api.post("/summary_chat", { historial });
+    const response = await api.post("/summary_chat", { history });
     return response.data;
   } catch (err) {
     throw new Error(err.response?.data?.error || err.message);
@@ -75,12 +75,12 @@ export const getSummary = async (historial) => {
 
 /**
  * Descarga un resumen de la conversación en formato PDF.
- * @param {Array} historial - Historial de mensajes del chat.
+ * @param {Array} history - Historial de mensajes del chat.
  * @returns {Blob} Archivo PDF generado por el backend.
  */
-export const downloadSummaryPdf = async (historial) => {
+export const downloadSummaryPdf = async (history) => {
   try {
-    const response = await api.post("/summary_pdf", { historial }, {
+    const response = await api.post("/summary_pdf", { history }, {
       responseType: "blob",
     });
     return response.data;

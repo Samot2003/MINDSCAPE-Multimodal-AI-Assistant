@@ -15,11 +15,11 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
 
   // Agrega la pregunta inicial al chat cuando está disponible
   useEffect(() => {
-    if (!initialQuestion || !initialQuestion.mensaje) {
+    if (!initialQuestion || !initialQuestion.message) {
       return;
     }
 
-    setChatMessages([{ sender: "bot", text: initialQuestion.mensaje }]);
+    setChatMessages([{ sender: "bot", text: initialQuestion.message }]);
     setFinished(initialQuestion.finished || false);
   }, [initialQuestion]);
 
@@ -29,6 +29,16 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatMessages]);
+
+  // Desplazamiento al final cuando el chat se marca como finalizada la conversacion
+  useEffect(() => {
+    if (finished && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }
+  }, [finished]);
 
   // Maneja el envío de mensajes del usuario y la respuesta del bot
   const handleSend = async () => {
@@ -43,9 +53,9 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
     setLoading(true);
 
     try {
-      const { mensaje, finished: chatFinished } = await continueChat(updatedChat);
+      const { message, finished: chatFinished } = await continueChat(updatedChat);
 
-      setChatMessages([...updatedChat, { sender: "bot", text: mensaje }]);
+      setChatMessages([...updatedChat, { sender: "bot", text: message }]);
       setFinished(chatFinished);
     } catch (err) {
       toast({
@@ -90,7 +100,7 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
   };
 
   return (
-    <VStack spacing={4} w="100%" maxW="600px" mx="auto">
+    <VStack spacing={4} w="100%" maxW="95vw" mx="auto" px={6}>
       <ImageChatUI
         selectedImage={selectedImage}
         chatMessages={chatMessages}
@@ -110,6 +120,7 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
           Descargar resumen en PDF
         </Button>
       )}
+      <div ref={chatEndRef} />
     </VStack>
   );
 };
