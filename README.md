@@ -1,180 +1,256 @@
-# Chatbot Mental - Análisis de Imágenes con IA 🧠
+# Manual Técnico - Chatbot Mental
 
-Una aplicación web que combina React y FastAPI para analizar imágenes usando Google Gemini AI y proporcionar reflexiones terapéuticas sobre las emociones que pueden provocar.
+## Índice
+1. [Requisitos del Sistema](#requisitos-del-sistema)
+2. [Arquitectura del Proyecto](#arquitectura-del-proyecto)
+3. [Instalación](#instalación)
+4. [Configuración](#configuración)
+5. [Ejecución](#ejecución)
+6. [Solución de Problemas](#solución-de-problemas)
 
-## 🚀 Características
+---
 
-- **Análisis de Imágenes**: Sube imágenes y obtén análisis emocionales detallados
-- **IA Avanzada**: Utiliza Google Gemini AI para generar análisis precisos
-- **Interfaz Moderna**: Frontend desarrollado con React y Chakra UI
-- **API Robusta**: Backend desarrollado con FastAPI
-- **Reflexiones Terapéuticas**: Genera reflexiones desde la perspectiva de un arte terapeuta
+## 1. Requisitos del Sistema
 
-## 📋 Requisitos
+### Software Necesario
+- **Python**: 3.8 o superior
+- **Node.js**: 14.0 o superior
+- **npm**: 6.0 o superior
+- **Git Bash** (para Windows) o terminal Unix (Linux/Mac)
 
-- **Python 3.12+**
-- **Node.js 16+**
-- **npm**
-- **Clave API de Google Gemini**
+### Dependencias del Backend
+- fastapi==0.104.1
+- uvicorn==0.24.0
+- python-multipart==0.0.6
+- google-generativeai==0.3.2
+- python-dotenv==1.0.0
+- Pillow==10.0.1
+- reportlab
 
-## 🛠️ Instalación y Ejecución
+### Dependencias del Frontend
+- React 19.2.0
+- Chakra UI 2.10.9
+- Axios 1.12.2
+- Framer Motion 12.23.24
+- React Icons 5.5.0
 
-### 1. Configurar el Backend
+---
 
-1. Navega al directorio del backend:
+## 2. Arquitectura del Proyecto
+
+```
+chatbot_mental/
+├── backend/              # Servidor API (FastAPI)
+│   ├── main.py          # Punto de entrada del servidor
+│   ├── controllers.py   # Lógica de negocio
+│   ├── models.py        # Modelos de datos
+│   ├── requirements.txt # Dependencias Python
+│   ├── .env            # Variables de entorno
+│   └── start_server.sh # Script de inicio del backend
+│
+└── frontend/            # Aplicación cliente (React)
+    ├── src/            # Código fuente
+    │   ├── App.jsx     # Componente principal
+    │   ├── components/ # Componentes React
+    │   └── services/   # Servicios API
+    ├── public/         # Archivos públicos
+    ├── package.json    # Dependencias Node.js
+    └── start_frontend.sh # Script de inicio del frontend
+```
+
+---
+
+## 3. Instalación
+
+### 3.1. Clonar el Repositorio
+
+```bash
+git clone <url-del-repositorio>
+cd chatbot_mental
+```
+
+### 3.2. Configuración del Backend
+
+#### Opción A: Instalación Automática (Recomendada)
+
+1. **Crear y activar entorno virtual**:
    ```bash
    cd chatbot_mental/backend
+   python -m venv .venv
    ```
 
-# Instalar dependencias
-python -m pip install -r requirements.txt
+2. **Activar el entorno virtual**:
+   - **Windows (Git Bash)**:
+     ```bash
+     source .venv/Scripts/activate
+     ```
+   - **Linux/Mac**:
+     ```bash
+     source .venv/bin/activate
+     ```
 
-# Crear archivo .env
-cp .env.example .env
+3. **Instalar dependencias**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-# Editar .env y agregar tu GOOGLE_API_KEY
-nano .env
-```
+#### Opción B: Instalación Manual
 
-**Contenido del archivo .env:**
+1. **Crear y activar entorno virtual** (igual que Opción A)
+
+2. **Instalar paquetes individualmente**:
+   ```bash
+   pip install fastapi==0.104.1
+   pip install uvicorn==0.24.0
+   pip install python-multipart==0.0.6
+   pip install google-generativeai==0.3.2
+   pip install python-dotenv==1.0.0
+   pip install Pillow==10.0.1
+   pip install reportlab
+   ```
+
+### 3.3. Configuración del Frontend
+
+1. **Navegar al directorio del frontend**:
+   ```bash
+   cd ../frontend
+   ```
+
+2. **Instalar dependencias de Node.js**:
+   ```bash
+   npm install
+   ```
+
+---
+
+## 4. Configuración
+
+### 4.1. Configuración del Backend (.env)
+
+Crear un archivo `.env` en el directorio `backend/` con las siguientes variables:
+
 ```env
-GOOGLE_API_KEY=tu_api_key_de_google_gemini_aqui
+# API Key de Google Generative AI
+GOOGLE_API_KEY=tu_api_key_aquí
+
+# Configuración del servidor (opcional)
 PORT=8000
-HOST=localhost
+HOST=0.0.0.0
 ```
 
-### 2. Configurar el Frontend
+**Nota**: Obtén tu API key desde [Google AI Studio](https://makersuite.google.com/app/apikey)
 
-```bash
-# Navegar al directorio del frontend
-cd ../frontend
+### 4.2. Configuración del Frontend
 
-# Instalar dependencias
-npm install
-```
+El frontend está configurado por defecto para conectarse al backend en `http://localhost:8000`. Si necesitas cambiar la URL del backend, edita el archivo `frontend/src/services/api.js`.
 
-## 🚀 Uso
+---
 
-### Método 1: Scripts Automáticos
+## 5. Ejecución
 
-**Iniciar Backend:**
+### 5.1. Método 1: Usando Scripts de Inicio (Recomendado)
+
+**Requisito**: Tener 2 terminales bash abiertas
+
+#### Terminal 1 - Backend
+
 ```bash
 cd chatbot_mental/backend
+source .venv/Scripts/activate   # Windows Git Bash
+# source .venv/bin/activate     # Linux/Mac
 ./start_server.sh
 ```
 
-**Iniciar Frontend (en otra terminal):**
+El servidor backend estará disponible en: `http://localhost:8000`
+
+#### Terminal 2 - Frontend
+
 ```bash
 cd chatbot_mental/frontend
 ./start_frontend.sh
 ```
 
-### Método 2: Manual
+La aplicación frontend estará disponible en: `http://localhost:3000`
 
-**Backend:**
+### 5.2. Método 2: Ejecución Manual
+
+#### Terminal 1 - Backend
+
 ```bash
 cd chatbot_mental/backend
+source .venv/Scripts/activate
 python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-**Frontend:**
+#### Terminal 2 - Frontend
+
 ```bash
 cd chatbot_mental/frontend
 npm start
 ```
 
-## 🌐 Acceso
+---
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **Documentación API**: http://localhost:8000/docs
+## 6. Solución de Problemas
 
-## 📖 Cómo Usar la Aplicación
+### Problema: Error "No se encontró el archivo .env"
 
-1. **Verificar Conexión**: La aplicación verificará automáticamente si el backend está funcionando
-2. **Subir Imagen**: Haz clic en "Analizar Imagen" y selecciona una imagen
-3. **Analizar**: La IA analizará la imagen y generará:
-   - Una descripción emocional de la imagen
-   - Una reflexión terapéutica sobre los sentimientos que puede provocar
-4. **Visualizar Resultados**: Los resultados se mostrarán en tarjetas organizadas
+**Solución**: Asegúrate de haber creado el archivo `.env` en el directorio `backend/` con la configuración requerida.
 
-## 🔧 Estructura del Proyecto
+### Problema: Error al activar el entorno virtual en Windows
 
+**Solución**: 
+- Usa Git Bash en lugar de PowerShell/CMD
+- Si usas PowerShell, ejecuta:
+  ```powershell
+  .venv\Scripts\Activate.ps1
+  ```
+
+### Problema: Puerto 8000 o 3000 ya en uso
+
+**Solución**: 
+- Detén el proceso que está usando el puerto
+- O modifica el puerto en los archivos de configuración
+
+### Problema: Dependencias no encontradas
+
+**Solución**:
+- Verifica que el entorno virtual esté activado
+- Reinstala las dependencias: `pip install -r requirements.txt`
+
+### Problema: Error de permisos en scripts .sh
+
+**Solución**:
+```bash
+chmod +x start_server.sh
+chmod +x start_frontend.sh
 ```
-chatbot_mental/
-├── backend/
-│   ├── main.py              # Aplicación FastAPI principal
-│   ├── models.py            # Modelo de Google Gemini
-│   ├── controllers.py       # Controladores de la aplicación
-│   ├── requirements.txt     # Dependencias de Python
-│   ├── .env                 # Variables de entorno
-│   └── start_server.sh      # Script para iniciar el backend
-├── frontend/
-│   ├── src/
-│   │   ├── App.js           # Componente principal
-│   │   ├── components/      # Componentes React
-│   │   └── services/        # Servicios API
-│   ├── package.json         # Dependencias de Node.js
-│   └── start_frontend.sh    # Script para iniciar el frontend
-└── README.md
-```
-
-## 🛠️ Tecnologías Utilizadas
-
-### Backend
-- **FastAPI**: Framework web moderno y rápido
-- **Google Gemini AI**: IA para análisis de imágenes
-- **Python-multipart**: Manejo de archivos
-- **Pillow**: Procesamiento de imágenes
-- **python-dotenv**: Gestión de variables de entorno
-
-### Frontend
-- **React**: Biblioteca de JavaScript para interfaces
-- **Chakra UI**: Biblioteca de componentes UI
-- **Axios**: Cliente HTTP para APIs
-- **React Icons**: Iconos para la interfaz
-
-## 🔒 Seguridad
-
-- Las claves API se almacenan en variables de entorno
-- CORS configurado para desarrollo local
-- Validación de tipos de archivo en la subida de imágenes
-
-## 🐛 Solución de Problemas
-
-### Error: "Servidor desconectado"
-- Verifica que el backend esté ejecutándose en el puerto 8000
-- Ejecuta: `python -m uvicorn main:app --reload`
-
-### Error: "GOOGLE_API_KEY no encontrada"
-- Asegúrate de tener un archivo `.env` en el directorio backend
-- Verifica que contenga tu clave API válida de Google Gemini
-
-### Error: "No se pudo inicializar Gemini"
-- Verifica que tu clave API sea válida
-- Comprueba tu conexión a internet
-- Asegúrate de tener créditos en tu cuenta de Google Cloud
-
-## 🤝 Contribuir
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama para tu característica (`git checkout -b feature/nueva-caracteristica`)
-3. Commit tus cambios (`git commit -m 'Agregar nueva característica'`)
-4. Push a la rama (`git push origin feature/nueva-caracteristica`)
-5. Abre un Pull Request
-
-## 📝 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
-## 📞 Soporte
-
-Si tienes problemas o preguntas, puedes:
-- Abrir un issue en GitHub
-- Contactar al desarrollador
 
 ---
 
-**¡Disfruta analizando imágenes con IA! 🎨✨**
+## Verificación de la Instalación
+
+### Backend
+Visita `http://localhost:8000/docs` para ver la documentación automática de la API (Swagger UI).
+
+### Frontend
+Visita `http://localhost:3000` para acceder a la interfaz de usuario del chatbot.
+
+---
+
+## Notas Adicionales
+
+- El servidor backend se ejecuta en modo `--reload`, lo que significa que se reiniciará automáticamente cuando detecte cambios en el código.
+- El frontend también se recarga automáticamente cuando se modifican los archivos.
+- Para producción, se recomienda construir el frontend con `npm run build` y servir los archivos estáticos.
+
+---
+
+## Contacto y Soporte
+
+Para reportar problemas o solicitar ayuda, consulta la documentación del proyecto o contacta con el equipo de desarrollo.
+
+---
+
+**Versión del Manual**: 1.0  
+**Fecha**: Enero 2026

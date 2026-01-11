@@ -75,6 +75,7 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
     setChatMessages([]);
     setUserInput("");
     setFinished(false);
+    window.location.reload();
   };
 
   // Descarga el resumen de la conversación en formato PDF
