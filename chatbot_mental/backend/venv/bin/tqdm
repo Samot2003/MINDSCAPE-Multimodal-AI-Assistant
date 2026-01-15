@@ -1,4 +1,4 @@
-#!/home/samot/Proyecto_TFG_React/chatbot_mental/backend/venv/bin/python3
+#!/home/samot/Proyecto_TFG_React/Github/chatbot_mental/chatbot_mental/backend/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

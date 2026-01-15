@@ -1,40 +1,25 @@
 #!/bin/bash
+echo " Iniciando servidor backend..."
 
-# Script para iniciar el servidor backend
-
-echo "🚀 Iniciando servidor backend..."
-echo "Asegúrate de tener configurada tu GOOGLE_API_KEY en el archivo .env"
-echo ""
-
-# Navegar al directorio del backend
 cd "$(dirname "$0")"
 
-# Verificar si existe el archivo .env
 if [ ! -f ".env" ]; then
-    echo "⚠️  No se encontró el archivo .env"
-    echo "Por favor crea un archivo .env con tu GOOGLE_API_KEY"
-    echo "Ejemplo:"
-    echo "GOOGLE_API_KEY=tu_api_key_aqui"
-    exit 1
+    echo "No se encontró el archivo .env"
 fi
 
-# Activar el entorno virtual si existe
-if [ -d "venv" ]; then
-    echo "🐍 Activando entorno virtual..."
-    source venv/bin/activate
+# Activate virtual environment and get Python path
+if [ -f ".venv/Scripts/python.exe" ]; then
+    # Windows (Git Bash / MINGW)
+    PYTHON_CMD=".venv/Scripts/python.exe"
+elif [ -f ".venv/bin/python" ]; then
+    # Linux / Mac
+    PYTHON_CMD=".venv/bin/python"
+elif command -v python3 &> /dev/null; then
+    PYTHON_CMD="python3"
 else
-    echo "⚠️  No se encontró el entorno virtual 'venv'."
-    echo "Creándolo..."
-    python3 -m venv venv
-    source venv/bin/activate
-fi
-
-# Verificar si las dependencias están instaladas
-if ! python3 -c "import fastapi" 2>/dev/null; then
-    echo "📦 Instalando dependencias..."
-    pip install -r requirements.txt
+    PYTHON_CMD="python"
 fi
 
 # Iniciar el servidor
-echo "✅ Iniciando servidor en http://localhost:8000"
-python3 -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+echo "Iniciando servidor con: $PYTHON_CMD"
+$PYTHON_CMD -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
