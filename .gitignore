@@ -8,3 +8,7 @@ __pycache__/
 *.log
 .DS_Store
 ./chatbot_mental/backend/venv
+# Secrets
+**/.env
+**/.env.*
+!.env.example
