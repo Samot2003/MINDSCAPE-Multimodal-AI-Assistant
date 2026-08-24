@@ -11,7 +11,11 @@ La aplicación utiliza una imagen como punto de partida para iniciar una convers
 ---
 
 ## 🎥 Demo
-![MINDSCAPE DEMO](docs/images/mindscape-demo.mp4)
+
+<video src="docs/images/mindscape-demo.mp4" controls muted playsinline width="100%" poster="docs/images/mindscape-home.png">
+  Tu navegador no soporta la reproducción de videos.
+</video>
+
 La demostración muestra el flujo principal de la aplicación:
 
 **Inicio → Selección de imagen → Conversación → Finalización de sesión → Resumen**
