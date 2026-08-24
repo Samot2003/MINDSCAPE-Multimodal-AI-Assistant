@@ -10,29 +10,6 @@ La aplicación utiliza una imagen como punto de partida para iniciar una convers
 
 ---
 
-## 🎥 Demo
-
-<video src="docs/images/mindscape-demo.mp4" controls muted playsinline width="100%" poster="docs/images/mindscape-home.png">
-  Tu navegador no soporta la reproducción de videos.
-</video>
-
-La demostración muestra el flujo principal de la aplicación:
-
-**Inicio → Selección de imagen → Conversación → Finalización de sesión → Resumen**
-
-Durante la demo se muestra:
-
-1. Acceso al menú principal.
-2. Selección de una imagen.
-3. Inicio de la conversación a partir de la imagen.
-4. Interacción con el modelo mediante el chat.
-5. Finalización de la sesión.
-6. Acceso al resumen de la conversación.
-
-> La imagen funciona como punto de partida de la conversación y permite incorporar información visual al contexto del diálogo.
-
----
-
 ## 📸 Aplicación
 
 ### Menú principal
