@@ -366,6 +366,16 @@ http://localhost:3000
 
 > El frontend se comunica con el backend en `http://localhost:8000` (configurado en `src/services/api.js`).
 
+### 7. Ejecutar las pruebas (opcional)
+
+Las pruebas del backend usan un modelo de Gemini simulado, por lo que no necesitan API Key ni consumen cuota:
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+python -m pytest tests
+```
+
 ---
 
 ## 👨‍💻 Desarrollo

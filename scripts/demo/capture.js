@@ -60,6 +60,16 @@ fs.mkdirSync(OUT, { recursive: true });
     if (backendError) throw new Error(`El backend devolvió un error: ${backendError}`);
   };
 
+  // Aborta si la interfaz muestra un aviso de error o una respuesta mal formada
+  const checkUi = async () => {
+    check();
+    const errorToast = page.locator('.chakra-alert[data-status="error"]');
+    if (await errorToast.count()) throw new Error(`La interfaz muestra un error: ${await errorToast.first().innerText()}`);
+    const texts = await page.locator('.entry__text').allInnerTexts();
+    const broken = texts.find((t) => /```|"message"\s*:|"punto"\s*:|"finished"\s*:|\[\s*\d{1,4}\s*,\s*\d{1,4}\s*\]/.test(t));
+    if (broken) throw new Error(`Respuesta mal formada en el chat: ${broken.slice(0, 160)}`);
+  };
+
   const moveTo = async (locator) => {
     const b = await locator.boundingBox();
     await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 25 });
@@ -114,6 +124,7 @@ fs.mkdirSync(OUT, { recursive: true });
   const ta = page.getByLabel('Tu mensaje');
   const entries = page.locator('.entry');
   await timedWait(() => waitUntil(() => document.querySelector('.entry--bot')));
+  await checkUi();
   await page.waitForTimeout(5000); // Movimiento de cámara y lectura de la pregunta inicial
 
   // Señala una zona haciendo clic en la escena (x, y relativos a la parte visible)
@@ -137,6 +148,7 @@ fs.mkdirSync(OUT, { recursive: true });
     await timedWait(() => page.waitForFunction(
       (k) => document.querySelectorAll('.entry').length >= k, n + 2, { timeout: 120000, polling: 250 },
     ).finally(check));
+    await checkUi();
     const reply = await entries.last().innerText();
     console.log('  usuaria:', text, '\n  modelo :', reply.replace(/\s+/g, ' ').replace(/^\d*\s*Mindscape: /, '').slice(0, 200));
     await page.waitForTimeout(Math.min(6000, 3000 + reply.length * 12)); // Movimiento de cámara y lectura
@@ -162,6 +174,7 @@ fs.mkdirSync(OUT, { recursive: true });
   await timedWait(async () => { dl = await download; await dl.path(); });
   check();
   await dl.saveAs(path.join(OUT, 'summary.pdf'));
+  await checkUi();
   await page.waitForTimeout(1500);
 
   const videoPath = await page.video().path();
