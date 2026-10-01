@@ -1,68 +1,77 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useToast, Button, VStack } from "@chakra-ui/react";
-import { continueChat, getSummary, downloadSummaryPdf } from "../services/api";
+import React, { useState, useEffect } from "react";
+import { useToast } from "@chakra-ui/react";
+import { continueChat, downloadSummaryPdf } from "../services/api";
+import { shrinkImage } from "../services/imageUtils";
 import ImageChatUI from "./ImageChatUI";
 
-const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
+const ImageChatContainer = ({ selectedImage, initialQuestion, onExit, onRestart }) => {
   // Manejo de estados para el chat, entrada del usuario y estado de carga
   const toast = useToast();
   const [chatMessages, setChatMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [finished, setFinished] = useState(false);
-  const chatEndRef = useRef(null);
-  const [summary, setSummary] = useState("");
+  const [downloading, setDownloading] = useState(false);
 
-  // Agrega la pregunta inicial al chat cuando está disponible
+  // Zona de la imagen que la usuaria ha señalado para su próximo mensaje ({ x, y } de 0 a 1)
+  const [pendingFocus, setPendingFocus] = useState(null);
+
+  // Versión reducida de la imagen que se envía al modelo en cada mensaje
+  const [apiImage, setApiImage] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    shrinkImage(selectedImage).then((image) => active && setApiImage(image));
+    return () => {
+      active = false;
+    };
+  }, [selectedImage]);
+
+  // Agrega la pregunta inicial (y la zona a la que se refiere) cuando está disponible
   useEffect(() => {
     if (!initialQuestion || !initialQuestion.message) {
       return;
     }
 
-    setChatMessages([{ sender: "bot", text: initialQuestion.message }]);
+    setChatMessages([{ sender: "bot", text: initialQuestion.message, focus: initialQuestion.focus || null }]);
     setFinished(initialQuestion.finished || false);
   }, [initialQuestion]);
 
-  // Desplazamiento automático al final del chat cuando se actualizan los mensajes
-  useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+  // Señala una zona de la imagen para el siguiente mensaje (null la quita)
+  const handlePoint = (point) => {
+    if (finished || loading) {
+      return;
     }
-  }, [chatMessages]);
-
-  // Desplazamiento al final cuando el chat se marca como finalizada la conversacion
-  useEffect(() => {
-    if (finished && chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-      });
-    }
-  }, [finished]);
+    setPendingFocus(point);
+  };
 
   // Maneja el envío de mensajes del usuario y la respuesta del bot
   const handleSend = async () => {
-    if (!userInput.trim() || finished) {
+    if (!userInput.trim() || finished || loading) {
       return;
     }
 
-    const newMessage = { sender: "user", text: userInput };
+    const newMessage = { sender: "user", text: userInput.trim(), focus: pendingFocus };
     const updatedChat = [...chatMessages, newMessage];
     setChatMessages(updatedChat);
     setUserInput("");
+    setPendingFocus(null);
     setLoading(true);
 
     try {
-      const { message, finished: chatFinished } = await continueChat(updatedChat);
+      const { message, focus, finished: chatFinished } = await continueChat(
+        updatedChat,
+        apiImage || selectedImage
+      );
 
-      setChatMessages([...updatedChat, { sender: "bot", text: message }]);
+      setChatMessages([...updatedChat, { sender: "bot", text: message, focus: focus || null }]);
       setFinished(chatFinished);
     } catch (err) {
       toast({
-        title: "Error",
+        title: "No se pudo enviar el mensaje",
         description: err.message,
         status: "error",
-        duration: 5000,
+        duration: 6000,
         isClosable: true,
       });
     } finally {
@@ -70,16 +79,9 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
     }
   };
 
-  // Reinicia la conversación y limpia los estados
-  const handleRestart = () => {
-    setChatMessages([]);
-    setUserInput("");
-    setFinished(false);
-    window.location.reload();
-  };
-
   // Descarga el resumen de la conversación en formato PDF
   const handleDownloadPdf = async () => {
+    setDownloading(true);
     try {
       const blob = await downloadSummaryPdf(chatMessages);
 
@@ -89,40 +91,36 @@ const ImageChatContainer = ({ selectedImage, initialQuestion }) => {
       a.download = "resumen_conversacion.pdf";
       a.click();
       URL.revokeObjectURL(url);
+      toast({ title: "Resumen descargado", status: "success", duration: 3000 });
     } catch (err) {
       toast({
-        title: "Error",
-        description: "No se pudo generar el PDF",
+        title: "No se pudo descargar el resumen",
+        description: "Inténtalo de nuevo en unos segundos.",
         status: "error",
-        duration: 5000,
+        duration: 6000,
         isClosable: true,
       });
+    } finally {
+      setDownloading(false);
     }
   };
 
   return (
-    <VStack spacing={4} w="100%" maxW="95vw" mx="auto" px={6}>
-      <ImageChatUI
-        selectedImage={selectedImage}
-        chatMessages={chatMessages}
-        userInput={userInput}
-        setUserInput={setUserInput}
-        handleSend={handleSend}
-        loading={loading}
-        disabled={finished}
-      />
-      {finished && (
-        <Button colorScheme="teal" onClick={handleRestart}>
-          Reiniciar conversación
-        </Button>
-      )}
-      {finished && (
-        <Button colorScheme="blue" onClick={handleDownloadPdf}>
-          Descargar resumen en PDF
-        </Button>
-      )}
-      <div ref={chatEndRef} />
-    </VStack>
+    <ImageChatUI
+      selectedImage={selectedImage}
+      chatMessages={chatMessages}
+      userInput={userInput}
+      setUserInput={setUserInput}
+      handleSend={handleSend}
+      loading={loading}
+      finished={finished}
+      pendingFocus={pendingFocus}
+      onPoint={handlePoint}
+      downloading={downloading}
+      onDownloadPdf={handleDownloadPdf}
+      onRestart={onRestart}
+      onExit={onExit}
+    />
   );
 };
 

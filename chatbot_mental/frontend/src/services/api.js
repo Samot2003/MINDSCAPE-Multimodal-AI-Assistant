@@ -22,7 +22,7 @@ export const startChatWithImage = async (imageFile, is_default = false) => {
     const response = await api.post("/start_chat", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data; // { message, finished }
+    return response.data; // { message, focus, finished }
   } catch (err) {
     console.error("Error en startChatWithImage:", err);
     throw new Error(err.response?.data?.error || err.message);
@@ -30,16 +30,22 @@ export const startChatWithImage = async (imageFile, is_default = false) => {
 };
 
 /**
- * Continúa el chat enviando el historial de mensajes.
- * @param {Array} chatMessages - Historial de mensajes del chat.
- * @returns {Object} Respuesta del backend con el siguiente mensaje y el estado.
+ * Continúa el chat enviando el historial de mensajes y la imagen de la conversación.
+ * @param {Array} chatMessages - Historial de mensajes del chat ({ sender, text, focus? }).
+ * @param {Blob} [imageFile] - Imagen para que el modelo pueda mirar las zonas señaladas.
+ * @returns {Object} Respuesta del backend con el siguiente mensaje, la zona señalada y el estado.
  */
-export const continueChat = async (chatMessages) => {
+export const continueChat = async (chatMessages, imageFile) => {
   try {
-    const response = await api.post("/continue_chat", {
-      history: chatMessages,
+    const formData = new FormData();
+    formData.append("history", JSON.stringify(chatMessages));
+    if (imageFile) {
+      formData.append("file", imageFile, "image.jpg");
+    }
+    const response = await api.post("/continue_chat", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data; // { message, finished }
+    return response.data; // { message, focus, finished }
   } catch (err) {
     console.error("Error en continueChat:", err);
     throw new Error(err.response?.data?.error || err.message);

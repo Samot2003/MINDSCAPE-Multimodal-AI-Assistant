@@ -1,132 +1,124 @@
-import React from "react";
-import { Box, VStack, HStack, Heading, Text, Button, Image, Spinner } from "@chakra-ui/react";
-import { motion } from "framer-motion";
+import React, { useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { FiArrowLeft, FiUpload } from "react-icons/fi";
 
-const MotionBox = motion(Box);
-
-// Importa todas las imágenes predeterminadas desde la carpeta de assets
-const importAll = (r) => r.keys().map(r);
-const defaultImages = importAll(
-  require.context("../assets/images", false, /\.(png|jpe?g|svg)$/)
-);
-
-const ImageSelectorUI = ({ selectedImage, previewURL, loading, onSelectImage, onSubmit }) => {
-  // Determina si la imagen seleccionada es una imagen predeterminada
-  const selectedDefaultImage =
-    typeof selectedImage === "number" ? defaultImages[selectedImage] : null;
+const ImageSelectorUI = ({
+  images,
+  selectedIndex,
+  preview,
+  isOwnImage,
+  loading,
+  onSelectImage,
+  onSubmit,
+  onBack,
+}) => {
+  const fileInputRef = useRef(null);
+  const hasSelection = Boolean(preview);
 
   return (
-    <VStack
-      minH="100vh"
-      justify="flex-start"
-      spacing={8}
-      position="relative"
-      overflow="hidden"
-      bg="linear-gradient(160deg, #f5f7f6, #eef2f1)"
-    >
-      {/* Fondo dinámico con animación */}
-      <MotionBox
-        position="absolute"
-        inset={0}
-        bg="radial-gradient(circle at 30% 20%, rgba(0,0,0,0.06), transparent 60%)"
-        animate={{ opacity: [0.4, 0.7, 0.4] }}
-        transition={{ duration: 25, repeat: Infinity }}
-        zIndex={0}
-      />
+    <div className="gallery">
+      <header className="topbar">
+        <button type="button" className="btn btn--quiet" onClick={onBack}>
+          <FiArrowLeft aria-hidden="true" /> Inicio
+        </button>
+        <p className="wordmark">Mindscape</p>
+      </header>
 
-      {/* Encabezado y descripción */}
-      <VStack spacing={3} zIndex={1} textAlign="center">
-        <Heading fontSize="4xl" fontWeight="500" letterSpacing="1px">
-          Elige una imagen
-        </Heading>
-        <Text maxW="480px" fontSize="sm" color="gray.600" lineHeight="1.8">
-          No busques la correcta. Elige la que te mire primero.
-        </Text>
-      </VStack>
+      <div className="gallery__header">
+        <h1 className="gallery__title">Elige una imagen</h1>
+        <p className="gallery__hint">No busques la correcta. Elige la que te mire primero.</p>
+      </div>
 
-      {/* Galería de imágenes predeterminadas */}
-      <HStack
-        spacing={4}
-        wrap="wrap"
-        justify="center"
-        zIndex={1}
-        maxW="900px"
-      >
-        {defaultImages.map((img, i) => (
-          <MotionBox
-            key={i}
-            whileHover={{ scale: 1.08, rotate: i % 2 === 0 ? 1 : -1 }}
-            transition={{ type: "spring", stiffness: 120 }}
-            borderRadius="3xl"
-            overflow="hidden"
-            boxShadow={
-              selectedImage === i
-                ? "0 0 0 3px rgba(0,0,0,0.25)"
-                : "0 20px 40px rgba(0,0,0,0.1)"
-            }
-            cursor="pointer"
-            onClick={() => onSelectImage(i)}
+      {/* Galería de imágenes predeterminadas y subida de una imagen propia */}
+      <div className={`gallery__grid${hasSelection ? " gallery__grid--has-selection" : ""}`}>
+        <button
+          type="button"
+          className={`tile tile--upload${isOwnImage ? " tile--selected" : ""}`}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <FiUpload aria-hidden="true" />
+          {isOwnImage ? "Cambiar mi imagen" : "Subir una imagen propia"}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="visually-hidden"
+          tabIndex={-1}
+          onChange={onSelectImage}
+        />
+
+        {images.map((img) => (
+          <button
+            key={img.index}
+            type="button"
+            className={`tile${selectedIndex === img.index ? " tile--selected" : ""}`}
+            aria-pressed={selectedIndex === img.index}
+            aria-label={`Imagen ${img.index + 1}`}
+            onClick={() => onSelectImage(img.index)}
           >
-            <Image src={img} boxSize="70px" objectFit="cover" />
-          </MotionBox>
+            <img src={img.thumb} alt="" loading="lazy" />
+          </button>
         ))}
-      </HStack>
+      </div>
 
-      {/* Zona de acciones: subir imagen o confirmar selección */}
-      <MotionBox
-        zIndex={1}
-        bg="rgba(255,255,255,0.7)"
-        backdropFilter="blur(12px)"
-        px={10}
-        py={8}
-        borderRadius="3xl"
-        boxShadow="0 40px 80px rgba(0,0,0,0.15)"
-        textAlign="center"
-      >
-        {!selectedDefaultImage && !previewURL && !loading && (
-          <>
-            <input
-              id="file-upload"
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={onSelectImage}
-            />
-            <Button as="label" htmlFor="file-upload" variant="ghost" fontSize="sm">
-              Sube una imagen propia
-            </Button>
-          </>
+      {/* Barra con la imagen elegida y la acción para empezar */}
+      <AnimatePresence>
+        {hasSelection && !loading && (
+          <motion.div
+            className="dock"
+            role="region"
+            aria-label="Imagen elegida"
+            initial={{ opacity: 0, y: 24, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: 24, x: "-50%" }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <img className="dock__thumb" src={preview.thumb} alt="" />
+            <p className="dock__text">{isOwnImage ? "Tu imagen está lista." : "Has elegido esta imagen."}</p>
+            <div className="dock__actions">
+              <button type="button" className="btn btn--ghost" onClick={() => onSelectImage(null)}>
+                Elegir otra
+              </button>
+              <button type="button" className="btn btn--primary" onClick={onSubmit}>
+                Empezar la conversación
+              </button>
+            </div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        {(selectedDefaultImage || previewURL) && !loading && (
-          <VStack spacing={5}>
-            <Image src={selectedDefaultImage || previewURL} borderRadius="2xl" maxH="280px" />
-            <HStack spacing={4}>
-              <Button
-                onClick={onSubmit}
-                rounded="full"
-                px={8}
-                bg="black"
-                color="white"
-                _hover={{ bg: "gray.800" }}
-              >
-                Entrar en el diálogo
-              </Button>
-              <Button
-                variant="outline"
-                rounded="full"
-                px={6}
-                onClick={() => onSelectImage(null)}
-              >
-                Cambiar imagen
-              </Button>
-            </HStack>
-          </VStack>
+      {/* Transición mientras el modelo analiza la imagen */}
+      <AnimatePresence>
+        {loading && preview && (
+          <motion.div
+            className="threshold"
+            role="status"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="threshold__bg" style={{ backgroundImage: `url(${preview.thumb})` }} />
+            <div className="threshold__inner">
+              <motion.img
+                className="threshold__img"
+                src={preview.full}
+                alt=""
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: [1, 1.025, 1], opacity: 1 }}
+                transition={{
+                  opacity: { duration: 0.8 },
+                  scale: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                }}
+              />
+              <p className="threshold__text">Mirando la imagen…</p>
+              <p className="threshold__sub">La primera pregunta tarda unos segundos.</p>
+            </div>
+          </motion.div>
         )}
-
-        {loading && <Spinner />}
-      </MotionBox>
-    </VStack>
+      </AnimatePresence>
+    </div>
   );
 };
 
