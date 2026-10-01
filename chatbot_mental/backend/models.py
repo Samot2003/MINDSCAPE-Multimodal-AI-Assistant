@@ -1,6 +1,7 @@
 import google.generativeai as genai
 from PIL import Image
 import os
+import re
 import json
 from dotenv import load_dotenv
 
@@ -11,7 +12,16 @@ Siguiendo el enfoque de la arteterapia, la imagen es un tercer elemento de la
 conversación: puedes invitar a fijarse en una parte concreta de ella. Si tu
 mensaje se refiere a una zona concreta de la imagen, indica dónde está con
 "punto": [y, x], coordenadas normalizadas de 0 a 1000. Si no, usa "punto": null.
+Las coordenadas van solo en "punto": no las menciones nunca dentro de "message".
 """
+
+# Coordenadas que el modelo a veces escribe dentro del texto, p. ej. "(punto: [150, 500])"
+COORDENADAS_EN_TEXTO = re.compile(
+    r"\s*\(\s*(?:punto|coordenadas?|zona)?\s*:?\s*\[\s*\d{1,4}\s*,\s*\d{1,4}\s*\]\s*\)"
+    r"|\s*(?:punto|coordenadas?)\s*:?\s*\[\s*\d{1,4}\s*,\s*\d{1,4}\s*\]"
+    r"|\s*\[\s*\d{1,4}\s*,\s*\d{1,4}\s*\]",
+    re.IGNORECASE,
+)
 
 class GeminiModel:
     def __init__(self):
@@ -28,8 +38,12 @@ class GeminiModel:
 
     # ------------------- UTILIDAD PARA PARSEAR RESPUESTAS -------------------
     def _parse_response(self, response):
- 
-        raw = response.text.strip()
+        message, finished, focus = self._extract_fields(response.text.strip())
+        # Elimina las coordenadas que el modelo haya escrito dentro del texto
+        message = COORDENADAS_EN_TEXTO.sub("", message).strip()
+        return message, finished, focus
+
+    def _extract_fields(self, raw):
 
         # 1. Si Gemini devolvió directamente un JSON válido
         try:
@@ -48,8 +62,23 @@ class GeminiModel:
         except:
             pass
 
-        # 3. Última opción: devolver texto plano
+        # 3. Si el JSON no es válido (p. ej. comillas sin escapar dentro del mensaje), extraer los campos uno a uno
+        lenient = self._parse_lenient(raw)
+        if lenient:
+            return lenient
+
+        # 4. Última opción: devolver texto plano
         return raw, False, None
+
+    @classmethod
+    def _parse_lenient(cls, raw):
+        message = re.search(r'"message"\s*:\s*"(.*)"\s*,\s*"(?:punto|finished)"', raw, re.DOTALL)
+        if not message:
+            return None
+        text = message.group(1).replace('\\"', '"').replace("\\n", "\n")
+        point = re.search(r'"punto"\s*:\s*\[\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\]', raw)
+        finished = re.search(r'"finished"\s*:\s*true', raw) is not None
+        return text, finished, cls._parse_point(point.groups()) if point else None
 
     @staticmethod
     def _parse_point(point):
@@ -92,7 +121,8 @@ class GeminiModel:
             De forma reflexiva y empática genera una pregunta inicial para fomentar
             la autoexploración del usuario sobre sus sentimientos basandote en la imagen.
             """ + INSTRUCCIONES_PUNTO + """
-            Devuelve EXCLUSIVAMENTE un JSON así:
+            Devuelve EXCLUSIVAMENTE un JSON válido así (para citar algo dentro del
+            mensaje usa comillas angulares « », nunca comillas dobles):
             {
                 "message": "...",
                 "punto": [y, x] o null,
@@ -106,7 +136,8 @@ class GeminiModel:
             De forma reflexiva y empática genera una pregunta inicial para fomentar
             la autoexploración del usuario sobre sus sentimientos basandote en la imagen.
             """ + INSTRUCCIONES_PUNTO + """
-            Devuelve EXCLUSIVAMENTE un JSON así:
+            Devuelve EXCLUSIVAMENTE un JSON válido así (para citar algo dentro del
+            mensaje usa comillas angulares « », nunca comillas dobles):
             {
                 "message": "...",
                 "punto": [y, x] o null,
@@ -140,7 +171,8 @@ class GeminiModel:
         conversacion por finalizada, haz una breve reflexion con un disclaimer de
         que eres una IA y no un profesional, despidete y marca finished como true.
         {image_context}
-        Devuelve EXCLUSIVAMENTE un JSON así:
+        Devuelve EXCLUSIVAMENTE un JSON válido así (para citar algo dentro del
+        mensaje usa comillas angulares « », nunca comillas dobles):
         {{
             "message": "respuesta natural",
             "punto": [y, x] o null,

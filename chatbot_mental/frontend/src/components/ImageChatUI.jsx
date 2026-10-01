@@ -130,8 +130,10 @@ const ImageChatUI = ({
   const voice = !loading && lastBotIndex >= 0 ? chatMessages[lastBotIndex] : null;
   const echo = lastUserIndex >= 0 && (loading || lastUserIndex < lastBotIndex) ? chatMessages[lastUserIndex] : null;
 
-  // La cámara sigue a la IA; al terminar, se aleja para mostrar el recorrido completo
-  const cameraFocus = finished ? null : viewFocus || voice?.focus || null;
+  // La cámara mira la última zona señalada (por la IA o por la usuaria) y se queda ahí
+  // hasta que se señale otra; al terminar, se aleja para mostrar el recorrido completo
+  const lastFocus = [...chatMessages].reverse().find((m) => m.focus)?.focus || null;
+  const cameraFocus = finished ? null : viewFocus || lastFocus;
 
   // Al llegar un mensaje nuevo, la cámara vuelve a seguir la conversación
   useEffect(() => {
