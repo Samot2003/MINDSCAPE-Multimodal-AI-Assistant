@@ -1,8 +1,12 @@
+import json
+from typing import Optional
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from PIL import UnidentifiedImageError
 from controllers import ChatbotController
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
+from google.api_core import exceptions as google_exceptions
 from controllers import generate_pdf_summary  # Generar resumen en PDF
 
 app = FastAPI()
@@ -15,6 +19,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Errores devueltos como JSON {"error": "..."} para que el frontend pueda mostrarlos
+@app.exception_handler(UnidentifiedImageError)
+async def invalid_image_handler(request, exc):
+    return JSONResponse(status_code=400, content={"error": "El archivo no es una imagen válida"})
+
+@app.exception_handler(google_exceptions.ResourceExhausted)
+async def quota_exceeded_handler(request, exc):
+    return JSONResponse(
+        status_code=429,
+        content={"error": "Se ha alcanzado el límite de uso de Gemini. Inténtalo de nuevo más tarde."},
+    )
+
+@app.exception_handler(google_exceptions.GoogleAPIError)
+async def gemini_error_handler(request, exc):
+    print("Error de Gemini:", exc)
+    return JSONResponse(status_code=502, content={"error": "No se pudo contactar con el modelo de IA"})
 
 # Modelo para manejar el historial de mensajes
 class ChatRequest(BaseModel):
@@ -30,14 +51,22 @@ async def health_check():
 async def start_chat(file: UploadFile = File(...), is_default: bool = Form(...)):
     image = file.file
     response = controller.start_chat(image, is_default)
-    return response  # {"message": "...", "finished": false}
+    return response  # {"message": "...", "focus": {"x", "y"} | null, "finished": false}
 
-# Endpoint para continuar el chat con el historial
+# Endpoint para continuar el chat con el historial (JSON) y, opcionalmente, la imagen
 @app.post("/continue_chat")
-async def continue_chat(data: ChatRequest):
-    response = controller.continue_chat(data.history)
+async def continue_chat(history: str = Form(...), file: Optional[UploadFile] = File(None)):
+    try:
+        messages = json.loads(history)
+    except json.JSONDecodeError:
+        messages = None
+    if not isinstance(messages, list):
+        return JSONResponse(status_code=400, content={"error": "El historial no es válido"})
+
+    image = file.file if file else None
+    response = controller.continue_chat(messages, image)
     print("CONTINUE_CHAT - finished:", response.get("finished"))
-    return response  # {"message": "...", "finished": true|false}
+    return response  # {"message": "...", "focus": {"x", "y"} | null, "finished": true|false}
 
 # Endpoint para generar un resumen de la conversación
 @app.post("/summary_chat")
