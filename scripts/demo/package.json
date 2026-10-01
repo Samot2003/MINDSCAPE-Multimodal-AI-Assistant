@@ -1,0 +1,11 @@
+{
+  "name": "mindscape-demo",
+  "private": true,
+  "description": "Graba la demo y las capturas del README de MINDSCAPE",
+  "scripts": {
+    "capture": "node capture.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
