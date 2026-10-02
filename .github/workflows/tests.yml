@@ -16,8 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Mismo rango de versiones que indica el README.
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        # Mismo rango que el README. google-generativeai 0.3.2 necesita Python 3.9 o superior.
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     defaults:
       run:
         working-directory: chatbot_mental/backend

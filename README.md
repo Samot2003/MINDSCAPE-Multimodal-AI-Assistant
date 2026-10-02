@@ -275,7 +275,7 @@ MINDSCAPE-Multimodal-AI-Assistant/
 
 ### Requisitos
 
-- Python 3.8 – 3.12
+- Python 3.9 – 3.12
 - Node.js y npm
 - Una API Key de Google Gemini ([Google AI Studio](https://aistudio.google.com/apikey))
 
@@ -386,7 +386,7 @@ pip install -r requirements-dev.txt
 python -m pytest tests
 ```
 
-Las mismas pruebas se ejecutan automáticamente con GitHub Actions en cada push a `main` y en cada pull request, con Python 3.8 a 3.12 ([`.github/workflows/tests.yml`](.github/workflows/tests.yml)).
+Las mismas pruebas se ejecutan automáticamente con GitHub Actions en cada push a `main` y en cada pull request, con Python 3.9 a 3.12 ([`.github/workflows/tests.yml`](.github/workflows/tests.yml)).
 
 ---
 
