@@ -1,5 +1,7 @@
 # MINDSCAPE
 
+[![Tests](https://github.com/Samot2003/MINDSCAPE-Multimodal-AI-Assistant/actions/workflows/tests.yml/badge.svg)](https://github.com/Samot2003/MINDSCAPE-Multimodal-AI-Assistant/actions/workflows/tests.yml)
+
 > Plataforma web de inteligencia artificial multimodal que combina el análisis de imágenes con una conversación contextualizada para fomentar la autoexploración.
 
 ![Demo de MINDSCAPE: selección de imagen, conversación con Gemini y cierre de la sesión](docs/images/mindscape-demo.gif)
@@ -223,7 +225,9 @@ La comunicación con el modelo se realiza desde el backend, manteniendo separada
 - **JSON**
 - **Swagger / OpenAPI**
 - **ReportLab**
+- **Pytest**
 - **Git / GitHub**
+- **GitHub Actions**
 
 ---
 
@@ -232,12 +236,18 @@ La comunicación con el modelo se realiza desde el backend, manteniendo separada
 ```text
 MINDSCAPE-Multimodal-AI-Assistant/
 │
+├── .github/
+│   └── workflows/
+│       └── tests.yml          # CI: pruebas del backend con pytest
+│
 ├── chatbot_mental/
 │   ├── backend/
 │   │   ├── main.py            # API REST (FastAPI)
 │   │   ├── controllers.py     # Lógica de negocio y generación del PDF
 │   │   ├── models.py          # Integración con Gemini y prompts
+│   │   ├── tests/             # Pruebas de la API con Gemini simulado
 │   │   ├── requirements.txt
+│   │   ├── requirements-dev.txt
 │   │   ├── start_server.sh
 │   │   └── .env.example
 │   │
@@ -265,7 +275,7 @@ MINDSCAPE-Multimodal-AI-Assistant/
 
 ### Requisitos
 
-- Python 3.8 – 3.12
+- Python 3.9 – 3.12
 - Node.js y npm
 - Una API Key de Google Gemini ([Google AI Studio](https://aistudio.google.com/apikey))
 
@@ -375,6 +385,8 @@ cd backend
 pip install -r requirements-dev.txt
 python -m pytest tests
 ```
+
+Las mismas pruebas se ejecutan automáticamente con GitHub Actions en cada push a `main` y en cada pull request, con Python 3.9 a 3.12 ([`.github/workflows/tests.yml`](.github/workflows/tests.yml)).
 
 ---
 
